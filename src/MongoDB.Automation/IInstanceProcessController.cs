@@ -21,6 +21,6 @@ namespace MongoDB.Automation
         /// Waits up to the specified timeout for all the instances to respond to a connection attempt.
         /// </summary>
         /// <param name="timeout"></param>
-        void WaitForAvailability(TimeSpan timeout);
+        void WaitForFullAvailability(TimeSpan timeout);
     }
 }

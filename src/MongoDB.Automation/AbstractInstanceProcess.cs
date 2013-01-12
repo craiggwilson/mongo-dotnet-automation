@@ -1,4 +1,5 @@
-﻿using MongoDB.Driver;
+﻿using MongoDB.Bson;
+using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -45,13 +46,12 @@ namespace MongoDB.Automation
 
         public CommandResult RunAdminCommand(string commandName)
         {
-            return Connect()
-                .GetDatabase("admin")
-                .RunCommand(commandName);
+            return RunAdminCommand(new CommandDocument(commandName, 1));
         }
 
         public CommandResult RunAdminCommand(CommandDocument commandDocument)
         {
+            Config.Out.WriteLine("Sending admin command to {0}: {1}", Address, commandDocument.ToJson());
             return Connect()
                 .GetDatabase("admin")
                 .RunCommand(commandDocument);
@@ -63,6 +63,8 @@ namespace MongoDB.Automation
 
         public void WaitForAvailability(TimeSpan timeout)
         {
+            Config.Out.WriteLine("Waiting for mongod at address {0} to become available.", Address);
+
             Util.Timeout(timeout,
                 string.Format("Unable to connect to instance for address {0}", Address),
                 TimeSpan.FromSeconds(10),

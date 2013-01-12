@@ -6,13 +6,13 @@ using System.Text;
 
 namespace MongoDB.Automation
 {
-    public class LocalReplicaSetMongodBuilder : LocalMongodBuilder<LocalReplicaSetMongodBuilder, ReplicaSetMemberSettings>
+    public class LocalReplicaSetMemberBuilder : LocalMongodBuilder<LocalReplicaSetMemberBuilder, ReplicaSetMemberSettings>
     {
-        public LocalReplicaSetMongodBuilder(string binPath)
+        public LocalReplicaSetMemberBuilder(string binPath)
             : base(binPath)
         { }
 
-        public LocalReplicaSetMongodBuilder OpLogSize(int size)
+        public LocalReplicaSetMemberBuilder OpLogSize(int size)
         {
             return Set("oplogSize", size.ToString());
         }

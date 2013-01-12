@@ -16,6 +16,7 @@ namespace MongoDB.Automation
         private readonly List<ReplicaSetMember> _members;
         private bool _isReplicaSetInitiated;
         private bool _hasArbiter;
+        private string _replicaSetName;
 
         public ReplicaSetController(IEnumerable<IInstanceProcess<ReplicaSetMemberSettings>> processes)
         {
@@ -24,30 +25,59 @@ namespace MongoDB.Automation
             Initialize(processes);
         }
 
+        public MongoServerAddress Primary
+        {
+            get
+            {
+                var primary = GetPrimaryMember();
+                if (primary == null)
+                {
+                    return null;
+                }
+
+                return primary.Address;
+            }
+        }
+
+        public IEnumerable<MongoServerAddress> Secondaries
+        {
+            get { return GetSecondaryMembers().Select(x => x.Process.Address); }
+        }
+
+        public IEnumerable<MongoServerAddress> Members
+        {
+            get { return _members.Select(x => x.Process.Address); }
+        }
+
         public string GetAddShardAddress()
         {
-            return string.Format("{0}/{1}", _members[0].ReplicaSetName, _members[0].Address);
+            return string.Format("{0}/{1}", _replicaSetName, _members[0].Address);
         }
 
         public void PrimaryIsAtAddress(MongoServerAddress address)
         {
+            Config.Out.WriteLine("Forcing primary to be at address {0}.", address);
             Util.Timeout(TimeSpan.FromMinutes(5),
                 string.Format("Unable to make member at address {0} primary.", address),
                 TimeSpan.FromSeconds(10),
                 remaining => TryMakePrimaryAtAddress(address));
+            Config.Out.WriteLine("Primary is at address {0}.", address);
         }
 
         public void Start()
         {
+            Config.Out.WriteLine("Starting replica set.");
             _members.ForEach(m => m.Start());
 
             if (!_isReplicaSetInitiated)
             {
-                Console.WriteLine("Initiating replica set");
+                Config.Out.WriteLine("Initiating replica set.");
                 _isReplicaSetInitiated = true;
                 var replSetInitiate = new CommandDocument("replSetInitiate", _config);
                 _members[0].RunReplicaSetInitiate(_config);
+                Config.Out.WriteLine("Replica set initiated.");
             }
+            Config.Out.WriteLine("Replica set started.");
         }
 
         public void Start(MongoServerAddress address)
@@ -59,8 +89,9 @@ namespace MongoDB.Automation
 
         public void Stop()
         {
-            Console.WriteLine("Stopping replica set");
+            Config.Out.WriteLine("Stopping replica set.", _replicaSetName);
             _members.ForEach(m => m.Stop());
+            Config.Out.WriteLine("Replica set stopped.", _replicaSetName);
         }
 
         public void Stop(MongoServerAddress address)
@@ -69,8 +100,9 @@ namespace MongoDB.Automation
             member.Stop();
         }
 
-        public void WaitForAvailability(TimeSpan timeout)
+        public void WaitForFullAvailability(TimeSpan timeout)
         {
+            Config.Out.WriteLine("Waiting for replica set to become fully available.");
             // start any member that isn't up and running
             _members.ForEach(m => 
             {
@@ -87,10 +119,12 @@ namespace MongoDB.Automation
                     server.Connect(remaining);
                     return IsFullyAvailable(server);
                 });
+            Config.Out.WriteLine("Replica set is fully available.");
         }
 
         public void WaitForPrimary(TimeSpan timeout)
         {
+            Config.Out.WriteLine("Waiting for primary.");
             var server = GetRunningMember().Connect();
             Util.Timeout(timeout,
                 string.Format("Unable to get a primary.", _members[0], timeout.TotalMilliseconds),
@@ -100,7 +134,7 @@ namespace MongoDB.Automation
                     server.Connect(remaining);
                     return IsPrimaryAvailable(server);
                 });
-            Console.WriteLine("Primary is at address {0}", GetPrimaryMember().Address);
+            Config.Out.WriteLine("Primary is at address {0}.", GetPrimaryMember().Address);
         }
 
         private ReplicaSetMember GetMember(MongoServerAddress address)
@@ -116,6 +150,8 @@ namespace MongoDB.Automation
 
         private ReplicaSetMember GetPrimaryMember()
         {
+            var running = GetRunningMember();
+            UpdateMemberStatuses(running.Connect());
             return _members.SingleOrDefault(x => x.Type == ReplicaSetMemberType.Primary);
         }
 
@@ -126,6 +162,8 @@ namespace MongoDB.Automation
 
         private IEnumerable<ReplicaSetMember> GetSecondaryMembers()
         {
+            var running = GetRunningMember();
+            UpdateMemberStatuses(running.Connect());
             return _members.Where(x => x.Type == ReplicaSetMemberType.Secondary);
         }
 
@@ -137,18 +175,18 @@ namespace MongoDB.Automation
 
         private void Initialize(IEnumerable<IInstanceProcess<ReplicaSetMemberSettings>> processes)
         {
-            var replicaSetName = processes.First().Settings.ReplicaSetName;
-            _config = new BsonDocument("_id", replicaSetName);
+            _replicaSetName = processes.First().Settings.ReplicaSetName;
+            _config = new BsonDocument("_id", _replicaSetName);
             BsonArray memberConfigs = new BsonArray();
             _config.Add("members", memberConfigs);
 
             processes.ForEach((i, process) =>
             {
-                if (process.Settings.ReplicaSetName != replicaSetName)
+                if (process.Settings.ReplicaSetName != _replicaSetName)
                 {
                     throw new InvalidOperationException(
                         string.Format("There are at least two different replica set names specified: {0} and {1}",
-                            replicaSetName,
+                            _replicaSetName,
                             process.Settings.ReplicaSetName));
                 }
 
@@ -174,6 +212,8 @@ namespace MongoDB.Automation
                     Type = ReplicaSetMemberType.Unknown
                 });
             });
+
+            Config.Out.WriteLine("Replica set {0} config: {1}", _replicaSetName, _config.ToJson());
         }
 
         private bool IsFullyAvailable(MongoServer server)
@@ -229,9 +269,9 @@ namespace MongoDB.Automation
             }
 
             // to ensure a proper election, we need to be fully available...
-            WaitForAvailability(TimeSpan.FromMinutes(5));
+            WaitForFullAvailability(TimeSpan.FromMinutes(5));
 
-            Console.WriteLine("Attempting to force primary member to be at address {0}. Current primary is at address {1}.", address, primaryMember.Address);
+            Config.Out.WriteLine("Attempting to force primary member to be at address {0}. Current primary is at address {1}.", address, primaryMember.Address);
 
             var targetMember = GetMember(address);
 
@@ -246,26 +286,30 @@ namespace MongoDB.Automation
 
             primaryMember.RunReplicaSetReconfig(_config);
 
-            WaitForAvailability(TimeSpan.FromMinutes(5));
+            WaitForFullAvailability(TimeSpan.FromMinutes(5));
 
             if (targetMember.Type == ReplicaSetMemberType.Primary)
             {
                 return true;
             }
 
+            Config.Out.WriteLine("Changing priority did not create the member at address {0} primary.");
             GetPrimaryMember().StepDown();
-            WaitForAvailability(TimeSpan.FromMinutes(5));
+            WaitForFullAvailability(TimeSpan.FromMinutes(5));
 
             return targetMember.Type == ReplicaSetMemberType.Primary;
         }
 
         private void UpdateMemberStatuses(MongoServer server)
         {
+            // TODO: maybe should be using db.isMaster()...
             var result = server.GetDatabase("admin").RunCommand("replSetGetStatus");
             var memberStatuses = result.Response["members"].AsBsonArray;
             if (memberStatuses.Count != _members.Count)
             {
-                throw new Exception(string.Format("Expected number of members was {0}, but replSetGetStatus reported {1}", _members.Count, memberStatuses.Count));
+                var message = string.Format("Expected number of members was {0}, but replSetGetStatus reported {1}", _members.Count, memberStatuses.Count);
+                Config.Error.WriteLine(message);
+                throw new AutomationException(message);
             }
 
             foreach (BsonDocument memberStatus in memberStatuses)
@@ -274,7 +318,9 @@ namespace MongoDB.Automation
                 var member = _members.SingleOrDefault(x => x.Id == id);
                 if (member == null)
                 {
-                    throw new Exception(string.Format("A member with id {0} was reported, but it was not started by this instance manager.", id));
+                    var message = string.Format("A member with id {0} was reported, but it was not started by this instance manager.", id);
+                    Config.Error.WriteLine(message);
+                    throw new AutomationException(message);
                 }
 
                 member.UpdateStatus(memberStatus);
@@ -340,6 +386,7 @@ namespace MongoDB.Automation
 
             public CommandResult RunReplicaSetReconfig(BsonDocument config)
             {
+                Config.Out.WriteLine("Reconfiguring replica set.", Process.Settings.ReplicaSetName);
                 return Process.RunAdminCommand(new CommandDocument 
                 {
                     { "replSetReconfig", config }
@@ -355,7 +402,7 @@ namespace MongoDB.Automation
             {
                 try
                 {
-                    Console.WriteLine("Primary at address {0} is stepping down", Address);
+                    Config.Out.WriteLine("Primary at address {0} is stepping down.", Address);
                     Process.RunAdminCommand(new CommandDocument { { "replSetStepDown", TimeSpan.FromMinutes(5).TotalSeconds }, { "force", true } });
                 }
                 catch (EndOfStreamException)

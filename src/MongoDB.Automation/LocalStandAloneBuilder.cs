@@ -6,9 +6,9 @@ using System.Text;
 
 namespace MongoDB.Automation
 {
-    public class LocalStandAloneMongodBuilder : LocalMongodBuilder<LocalStandAloneMongodBuilder, StandAloneSettings>
+    public class LocalStandAloneBuilder : LocalMongodBuilder<LocalStandAloneBuilder, StandAloneSettings>
     {
-        public LocalStandAloneMongodBuilder(string binPath)
+        public LocalStandAloneBuilder(string binPath)
             : base(binPath)
         { }
     }

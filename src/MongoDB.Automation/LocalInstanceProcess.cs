@@ -55,7 +55,7 @@ namespace MongoDB.Automation
                 return;
             }
 
-            Console.WriteLine("Starting {0} {1}", _process.StartInfo.FileName, _process.StartInfo.Arguments);
+            Config.Out.WriteLine("Starting {0} {1}.", _process.StartInfo.FileName, _process.StartInfo.Arguments);
 
             _processIsSupposedToBeRunning = true;
             _process.Start();
@@ -66,6 +66,7 @@ namespace MongoDB.Automation
                 {
                     return IsRunning;
                 });
+            Config.Out.WriteLine("Process {0} started.", _process.Id);
         }
 
         public override void Stop()
@@ -76,12 +77,25 @@ namespace MongoDB.Automation
             }
             try
             {
-                Console.WriteLine("Stopping instance for address {0}", Address);
+                Config.Out.WriteLine("Stopping instance for address {0}.", Address);
                 _processIsSupposedToBeRunning = false;
                 RunAdminCommand("shutdown");
             }
             catch (EndOfStreamException)
-            { } // this is expected
+            { } // this is expected for shutdown
+            finally
+            {
+                Thread.Sleep(TimeSpan.FromSeconds(4));
+                if (!_process.HasExited)
+                {
+                    try
+                    {
+                        _process.Kill();
+                    }
+                    catch { }
+                }
+                Config.Out.WriteLine("Process {0} stopped.", _process.Id);
+            }
         }
     }
 }

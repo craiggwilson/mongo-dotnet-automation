@@ -48,16 +48,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AbstractInstanceProcess.cs" />
+    <Compile Include="AutomationException.cs" />
     <Compile Include="IInstanceProcessFactory.cs" />
     <Compile Include="InstanceProcessSettingsBase.cs" />
+    <Compile Include="LocalDbPathOptions.cs" />
+    <Compile Include="Config.cs" />
     <Compile Include="ReplicaSetControllerFactory.cs" />
     <Compile Include="ShardRouterSettings.cs" />
     <Compile Include="IInstanceProcessSettings.cs" />
     <Compile Include="LocalMongosBuilder.cs" />
     <Compile Include="IShardableInstanceProcessController.cs" />
-    <Compile Include="LocalInstanceProcessBuilder.cs" />
-    <Compile Include="LocalReplicaSetMongodBuilder.cs" />
-    <Compile Include="LocalStandAloneMongodBuilder.cs" />
+    <Compile Include="LocalBuilder.cs" />
+    <Compile Include="LocalReplicaSetMemberBuilder.cs" />
+    <Compile Include="LocalStandAloneBuilder.cs" />
     <Compile Include="ReplicaSetMemberSettings.cs" />
     <Compile Include="ShardConfigServerSettings.cs" />
     <Compile Include="ShardController.cs" />

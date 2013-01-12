@@ -37,7 +37,8 @@ namespace MongoDB.Automation
             }
             while (timeout > TimeSpan.Zero);
 
-            throw new Exception(timeoutMessage);
+            Config.Error.WriteLine(timeoutMessage);
+            throw new AutomationException(timeoutMessage);
         }
     }
 }

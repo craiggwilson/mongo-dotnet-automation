@@ -36,7 +36,7 @@ namespace MongoDB.Automation
             _instanceProcess.Stop();
         }
 
-        public void WaitForAvailability(TimeSpan timeout)
+        public void WaitForFullAvailability(TimeSpan timeout)
         {
             if (!_instanceProcess.IsRunning)
             {

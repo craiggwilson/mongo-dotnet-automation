@@ -27,13 +27,17 @@ namespace MongoDB.Automation
 
         public void Start()
         {
+            Config.Out.WriteLine("Starting shards.");
             _shards.ForEach(s => s.Start());
+            Config.Out.WriteLine("Starting config servers.");
             _configServers.ForEach(cs => cs.Start());
+            Config.Out.WriteLine("Starting routers.");
             _routers.ForEach(r => r.Start());
 
             if (!_isInitiated)
             {
                 var router = _routers.First();
+                Config.Out.WriteLine("Adding shards to the cluster.");
                 _shards.ForEach(s => s.AddToCluster(router));
                 _isInitiated = true;
             }
@@ -41,13 +45,17 @@ namespace MongoDB.Automation
 
         public void Stop()
         {
+            Config.Out.WriteLine("Stopping shards.");
             _shards.ForEach(s => s.Stop());
+            Config.Out.WriteLine("Stopping config servers.");
             _configServers.ForEach(cs => cs.Stop());
+            Config.Out.WriteLine("Stopping routers.");
             _routers.ForEach(r => r.Stop());
         }
 
-        public void WaitForAvailability(TimeSpan timeout)
+        public void WaitForFullAvailability(TimeSpan timeout)
         {
+            Config.Out.WriteLine("Waiting for full availability.");
             _shards.ForEach(s => s.WaitForAvailability(timeout));
             _configServers.ForEach(cs => cs.WaitForAvailability(timeout));
             _routers.ForEach(r => r.WaitForAvailability(timeout));
@@ -71,8 +79,10 @@ namespace MongoDB.Automation
 
             public void AddToCluster(IInstanceProcess<ShardRouterSettings> router)
             {
+                var address = _controller.GetAddShardAddress();
+                Config.Out.WriteLine("Adding shard to cluster: {0}.", address);
                 var cmd = new CommandDocument();
-                cmd.Add("addShard", _controller.GetAddShardAddress());
+                cmd.Add("addShard", address);
                 cmd.Add("name", _name);
                 router.RunAdminCommand(cmd);
             }
@@ -89,7 +99,7 @@ namespace MongoDB.Automation
 
             public void WaitForAvailability(TimeSpan timeout)
             {
-                _controller.WaitForAvailability(timeout);
+                _controller.WaitForFullAvailability(timeout);
             }
         }
     }

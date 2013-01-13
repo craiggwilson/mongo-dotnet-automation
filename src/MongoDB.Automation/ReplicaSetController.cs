@@ -64,10 +64,10 @@ namespace MongoDB.Automation
             Config.Out.WriteLine("Primary is at address {0}.", address);
         }
 
-        public void Start()
+        public void Start(StartOptions options)
         {
             Config.Out.WriteLine("Starting replica set.");
-            _members.ForEach(m => m.Start());
+            _members.ForEach(m => m.Start(options));
 
             if (!_isReplicaSetInitiated)
             {
@@ -80,10 +80,10 @@ namespace MongoDB.Automation
             Config.Out.WriteLine("Replica set started.");
         }
 
-        public void Start(MongoServerAddress address)
+        public void Start(MongoServerAddress address, StartOptions options)
         {
             var member = GetMember(address);
-            member.Start();
+            member.Start(options);
             member.WaitForAvailability(TimeSpan.FromMinutes(10));
         }
 
@@ -106,7 +106,7 @@ namespace MongoDB.Automation
             // start any member that isn't up and running
             _members.ForEach(m => 
             {
-                m.Start();
+                m.Start(StartOptions.None);
                 m.WaitForAvailability(timeout);
             });
 
@@ -393,9 +393,9 @@ namespace MongoDB.Automation
                 });
             }
 
-            public void Start()
+            public void Start(StartOptions options)
             {
-                Process.Start();
+                Process.Start(options);
             }
 
             public void StepDown()

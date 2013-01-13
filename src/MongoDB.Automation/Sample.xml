@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<AutomationDefinition type="replicaSet">
+  
+  <members basePath="C:\MongoDB\data">
+    <member binPath="C:\MongoDB\slect">
+      <dbpath>{basePath}\{replSet}\{port}</dbpath>
+    </member>
+  </members>
+  
+</AutomationDefinition>

@@ -10,7 +10,8 @@ namespace MongoDB.Automation
         /// <summary>
         /// Starts all the instances.
         /// </summary>
-        void Start();
+        /// <param name="options">The options.</param>
+        void Start(StartOptions options);
 
         /// <summary>
         /// Stops all the instances.

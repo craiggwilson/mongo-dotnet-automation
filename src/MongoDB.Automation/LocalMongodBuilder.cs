@@ -11,15 +11,12 @@ namespace MongoDB.Automation
         where TBuilder : LocalMongodBuilder<TBuilder, TSettings>
         where TSettings : IInstanceProcessSettings
     {
-        private LocalDbPathOptions _dbPathOptions;
-
         protected LocalMongodBuilder(string binPath)
             : base(binPath)
         { }
 
-        public TBuilder DbPath(Func<TSettings, string> dbPathFactory, LocalDbPathOptions options)
+        public TBuilder DbPath(Func<TSettings, string> dbPathFactory)
         {
-            _dbPathOptions = options;
             return Set("dbpath", dbPathFactory);
         }
 
@@ -40,44 +37,16 @@ namespace MongoDB.Automation
 
         public IInstanceProcess<TSettings> Create(TSettings settings)
         {
-            var process = new LocalInstanceProcess<TSettings>(
+            string dbpath;
+            TryGetArgument("dbpath", settings, out dbpath);
+            string logpath;
+            TryGetArgument("logpath", settings, out logpath);
+            return new LocalInstanceProcess<TSettings>(
                 GetExecutable("mongod"),
                 GetCommandArguments(settings),
-                settings);
-            
-            string dbpath;
-            if (TryGetArgument("dbpath", settings, out dbpath))
-            {
-                var exists = Directory.Exists(dbpath);
-                if (_dbPathOptions == LocalDbPathOptions.CleanAndEnsureExists && exists)
-                {
-                    Config.Out.WriteLine("Removing directory at {0}", dbpath);
-                    try
-                    {
-                        Directory.Delete(dbpath, true);
-                    }
-                    catch (Exception ex)
-                    {
-                        Config.Error.WriteLine("Unable to remove directory: {0}", ex.Message);
-                        throw;
-                    }
-                    exists = false;
-                }
-                if ((_dbPathOptions == LocalDbPathOptions.CleanAndEnsureExists || _dbPathOptions == LocalDbPathOptions.EnsureExists) && !exists)
-                {
-                    try
-                    {
-                        Directory.CreateDirectory(dbpath);
-                    }
-                    catch (Exception ex)
-                    {
-                        Config.Error.WriteLine("Unable to create directory: {0}", ex.Message);
-                        throw;
-                    }
-                }
-            }
-
-            return process;
+                settings,
+                dbpath,
+                logpath);
         }
     }
 }

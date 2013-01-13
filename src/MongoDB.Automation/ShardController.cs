@@ -25,14 +25,14 @@ namespace MongoDB.Automation
             _isInitiated = false;
         }
 
-        public void Start()
+        public void Start(StartOptions options)
         {
             Config.Out.WriteLine("Starting shards.");
-            _shards.ForEach(s => s.Start());
+            _shards.ForEach(s => s.Start(options));
             Config.Out.WriteLine("Starting config servers.");
-            _configServers.ForEach(cs => cs.Start());
+            _configServers.ForEach(cs => cs.Start(options));
             Config.Out.WriteLine("Starting routers.");
-            _routers.ForEach(r => r.Start());
+            _routers.ForEach(r => r.Start(options));
 
             if (!_isInitiated)
             {
@@ -87,9 +87,9 @@ namespace MongoDB.Automation
                 router.RunAdminCommand(cmd);
             }
 
-            public void Start()
+            public void Start(StartOptions options)
             {
-                _controller.Start();
+                _controller.Start(options);
             }
 
             public void Stop()

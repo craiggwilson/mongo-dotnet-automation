@@ -51,7 +51,7 @@
     <Compile Include="AutomationException.cs" />
     <Compile Include="IInstanceProcessFactory.cs" />
     <Compile Include="InstanceProcessSettingsBase.cs" />
-    <Compile Include="LocalDbPathOptions.cs" />
+    <Compile Include="StartOptions.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="ReplicaSetControllerFactory.cs" />
     <Compile Include="ShardRouterSettings.cs" />
@@ -81,6 +81,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Sample.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\tools\nuget\nuget.targets" />

@@ -5,10 +5,9 @@ using System.Text;
 
 namespace MongoDB.Automation
 {
-    public enum LocalDbPathOptions
+    public enum StartOptions
     {
         None,
-        EnsureExists,
-        CleanAndEnsureExists
+        Clean
     }
 }

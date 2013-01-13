@@ -26,9 +26,9 @@ namespace MongoDB.Automation
             return _instanceProcess.Address.ToString();
         }
 
-        public void Start()
+        public void Start(StartOptions options)
         {
-            _instanceProcess.Start();
+            _instanceProcess.Start(options);
         }
 
         public void Stop()
@@ -40,7 +40,7 @@ namespace MongoDB.Automation
         {
             if (!_instanceProcess.IsRunning)
             {
-                _instanceProcess.Start();
+                _instanceProcess.Start(StartOptions.None);
             }
 
             _instanceProcess.WaitForAvailability(timeout);

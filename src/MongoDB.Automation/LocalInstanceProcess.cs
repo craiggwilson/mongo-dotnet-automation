@@ -13,10 +13,12 @@ namespace MongoDB.Automation
         where TSettings : IInstanceProcessSettings
     {
         private readonly MongoServerAddress _address;
+        private readonly string _dbPath;
+        private readonly string _logPath;
         private readonly Process _process;
         private bool _processIsSupposedToBeRunning;
 
-        public LocalInstanceProcess(string executable, string arguments, TSettings settings)
+        public LocalInstanceProcess(string executable, string arguments, TSettings settings, string dbPath, string logPath)
             : base(settings)
         {
             if (string.IsNullOrEmpty("executable"))
@@ -36,6 +38,9 @@ namespace MongoDB.Automation
                     UseShellExecute = false
                 }
             };
+
+            _dbPath = dbPath;
+            _logPath = logPath;
         }
 
         public override MongoServerAddress Address
@@ -48,11 +53,35 @@ namespace MongoDB.Automation
             get { return _processIsSupposedToBeRunning && !_process.HasExited; }
         }
 
-        public override void Start()
+        public override void Start(StartOptions options)
         {
             if (IsRunning)
             {
                 return;
+            }
+
+            Config.Out.WriteLine("Starting {0} {1}.", _process.StartInfo.FileName, _process.StartInfo.Arguments);
+
+            if (!string.IsNullOrEmpty(_dbPath))
+            {
+                var exists = Directory.Exists(_dbPath);
+                if (exists && options == StartOptions.Clean)
+                {
+                    RemoveDbPath();
+                }
+                if (!exists)
+                {
+                    CreateDbPath();
+                }
+            }
+
+            if (!string.IsNullOrEmpty(_logPath))
+            {
+                var exists = File.Exists(_logPath);
+                if (exists && options == StartOptions.Clean)
+                {
+                    RemoveLogPath();
+                }
             }
 
             Config.Out.WriteLine("Starting {0} {1}.", _process.StartInfo.FileName, _process.StartInfo.Arguments);
@@ -95,6 +124,47 @@ namespace MongoDB.Automation
                     catch { }
                 }
                 Config.Out.WriteLine("Process {0} stopped.", _process.Id);
+            }
+        }
+
+        private void CreateDbPath()
+        {
+            try
+            {
+                Directory.CreateDirectory(_dbPath);
+            }
+            catch (Exception ex)
+            {
+                Config.Error.WriteLine("Unable to create directory: {0}", ex.Message);
+                throw;
+            }
+        }
+
+        private void RemoveDbPath()
+        {
+            Config.Out.WriteLine("Removing directory at {0}", _dbPath);
+            try
+            {
+                Directory.Delete(_dbPath, true);
+            }
+            catch (Exception ex)
+            {
+                Config.Error.WriteLine("Unable to remove directory: {0}", ex.Message);
+                throw;
+            }
+        }
+
+        private void RemoveLogPath()
+        {
+            Config.Out.WriteLine("Removing file at {0}", _logPath);
+            try
+            {
+                File.Delete(_logPath);
+            }
+            catch (Exception ex)
+            {
+                Config.Error.WriteLine("Unable to remove file: {0}", ex.Message);
+                throw;
             }
         }
     }

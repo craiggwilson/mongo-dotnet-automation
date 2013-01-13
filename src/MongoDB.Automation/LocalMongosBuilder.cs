@@ -20,10 +20,14 @@ namespace MongoDB.Automation
         public IInstanceProcess<ShardRouterSettings> Create(ShardRouterSettings settings)
         {
             Set("port", settings.Port.ToString());
+            string logpath;
+            TryGetArgument("logpath", settings, out logpath);
             return new LocalInstanceProcess<ShardRouterSettings>(
                 GetExecutable("mongos"),
                 GetCommandArguments(settings),
-                settings);
+                settings,
+                null,
+                logpath);
         }
 
         public LocalMongosBuilder ConfigServer(MongoServerAddress address)

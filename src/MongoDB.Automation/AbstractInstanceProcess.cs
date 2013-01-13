@@ -57,7 +57,7 @@ namespace MongoDB.Automation
                 .RunCommand(commandDocument);
         }
 
-        public abstract void Start();
+        public abstract void Start(StartOptions options);
 
         public abstract void Stop();
 

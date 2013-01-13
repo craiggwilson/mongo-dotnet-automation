@@ -52,7 +52,8 @@ namespace MongoDB.Automation
         /// <summary>
         /// Starts the process if it is not running.  Otherwise, it does nothing.
         /// </summary>
-        void Start();
+        /// <param name="options">The options.</param>
+        void Start(StartOptions options);
 
         /// <summary>
         /// Stops the process if it is running.  Otherwise, it does nothing.

@@ -49,31 +49,24 @@
   <ItemGroup>
     <Compile Include="AbstractInstanceProcess.cs" />
     <Compile Include="AutomationException.cs" />
-    <Compile Include="IInstanceProcessFactory.cs" />
-    <Compile Include="InstanceProcessSettingsBase.cs" />
+    <Compile Include="Local\LocalInstanceProcess.cs" />
+    <Compile Include="Local\LocalBuilder.cs" />
+    <Compile Include="Local\LocalReplicaSetMember.cs" />
+    <Compile Include="Local\LocalReplicatSetBuilder.cs" />
+    <Compile Include="Local\ILocalBuilder.cs" />
+    <Compile Include="Local\ILocalMongodBuilder.cs" />
+    <Compile Include="Local\ILocalReplicaSetMemberBuilder.cs" />
     <Compile Include="StartOptions.cs" />
     <Compile Include="Config.cs" />
-    <Compile Include="ReplicaSetControllerFactory.cs" />
-    <Compile Include="ShardRouterSettings.cs" />
-    <Compile Include="IInstanceProcessSettings.cs" />
-    <Compile Include="LocalMongosBuilder.cs" />
     <Compile Include="IShardableInstanceProcessController.cs" />
-    <Compile Include="LocalBuilder.cs" />
-    <Compile Include="LocalReplicaSetMemberBuilder.cs" />
-    <Compile Include="LocalStandAloneBuilder.cs" />
-    <Compile Include="ReplicaSetMemberSettings.cs" />
-    <Compile Include="ShardConfigServerSettings.cs" />
     <Compile Include="ShardController.cs" />
     <Compile Include="Extensions\MongoDB\Driver\MongoServerAddressExtensions.cs" />
     <Compile Include="Extensions\System\Collections\Generic\IEnumerableExtensions.cs" />
     <Compile Include="IInstanceProcessController.cs" />
     <Compile Include="IInstanceProcess.cs" />
-    <Compile Include="LocalInstanceProcess.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReplicaSetController.cs" />
-    <Compile Include="LocalMongodBuilder.cs" />
     <Compile Include="StandAloneController.cs" />
-    <Compile Include="StandAloneSettings.cs" />
     <Compile Include="Util.cs" />
   </ItemGroup>
   <ItemGroup>

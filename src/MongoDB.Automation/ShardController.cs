@@ -13,11 +13,11 @@ namespace MongoDB.Automation
     public class ShardController : IInstanceProcessController
     {
         private readonly List<Shard> _shards;
-        private readonly List<IInstanceProcess<ShardConfigServerSettings>> _configServers;
-        private readonly List<IInstanceProcess<ShardRouterSettings>> _routers;
+        private readonly List<IInstanceProcess> _configServers;
+        private readonly List<IInstanceProcess> _routers;
         private bool _isInitiated;
 
-        public ShardController(IEnumerable<IShardableInstanceProcessController> shards, IEnumerable<IInstanceProcess<ShardConfigServerSettings>> configServers, IEnumerable<IInstanceProcess<ShardRouterSettings>> routers)
+        public ShardController(IEnumerable<IShardableInstanceProcessController> shards, IEnumerable<IInstanceProcess> configServers, IEnumerable<IInstanceProcess> routers)
         {
             _shards = shards.Select((x, i) => new Shard(string.Format("shard_{0}", i), x)).ToList();
             _configServers = configServers.ToList();
@@ -77,7 +77,7 @@ namespace MongoDB.Automation
                 get { return _name; }
             }
 
-            public void AddToCluster(IInstanceProcess<ShardRouterSettings> router)
+            public void AddToCluster(IInstanceProcess router)
             {
                 var address = _controller.GetAddShardAddress();
                 Config.Out.WriteLine("Adding shard to cluster: {0}.", address);

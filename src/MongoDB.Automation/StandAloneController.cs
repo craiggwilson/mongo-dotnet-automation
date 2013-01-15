@@ -9,9 +9,9 @@ namespace MongoDB.Automation
 {
     public class StandAloneController : IShardableInstanceProcessController
     {
-        private readonly IInstanceProcess<StandAloneSettings> _instanceProcess;
+        private readonly IInstanceProcess _instanceProcess;
 
-        public StandAloneController(IInstanceProcess<StandAloneSettings> instanceProcess)
+        public StandAloneController(IInstanceProcess instanceProcess)
         {
             if (instanceProcess == null)
             {

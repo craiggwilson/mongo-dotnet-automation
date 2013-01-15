@@ -9,8 +9,7 @@ using System.Threading;
 
 namespace MongoDB.Automation
 {
-    public sealed class LocalInstanceProcess<TSettings> : AbstractInstanceProcess<TSettings>
-        where TSettings : IInstanceProcessSettings
+    public sealed class LocalInstanceProcess : AbstractInstanceProcess
     {
         private readonly MongoServerAddress _address;
         private readonly string _dbPath;
@@ -18,29 +17,42 @@ namespace MongoDB.Automation
         private readonly Process _process;
         private bool _processIsSupposedToBeRunning;
 
-        public LocalInstanceProcess(string executable, string arguments, TSettings settings, string dbPath, string logPath)
-            : base(settings)
+        public LocalInstanceProcess(string executable, IDictionary<string, string> arguments)
         {
             if (string.IsNullOrEmpty("executable"))
             {
                 throw new ArgumentException("Cannot be null or empty.", "executable");
             }
 
-            _address = new MongoServerAddress("localhost", Settings.Port);
+            string port;
+            if (!arguments.TryGetValue("port", out port))
+            {
+                port = "27017"; // this is the default...
+            }
+
+            _address = new MongoServerAddress("localhost", int.Parse(port));
             _process = new Process
             {
                 StartInfo = new ProcessStartInfo
                 {
                     FileName = executable,
-                    Arguments = arguments,
+                    Arguments = GetCommandArguments(arguments),
                     CreateNoWindow = true,
                     LoadUserProfile = false,
                     UseShellExecute = false
                 }
             };
 
-            _dbPath = dbPath;
-            _logPath = logPath;
+            if (!arguments.TryGetValue("dbpath", out _dbPath))
+            {
+                _dbPath = "C:\\data\\db";
+                if (Environment.OSVersion.Platform == PlatformID.MacOSX || Environment.OSVersion.Platform == PlatformID.Unix)
+                {
+                    _dbPath = "/data/db";
+                }
+            }
+
+            arguments.TryGetValue("logpath", out _logPath);
         }
 
         public override MongoServerAddress Address
@@ -138,6 +150,22 @@ namespace MongoDB.Automation
                 Config.Error.WriteLine("Unable to create directory: {0}", ex.Message);
                 throw;
             }
+        }
+
+        protected string GetCommandArguments(IDictionary<string, string> arguments)
+        {
+            List<string> args = new List<string>();
+            foreach (var pair in arguments)
+            {
+                string arg = "--" + pair.Key;
+                if (pair.Value != null)
+                {
+                    arg += " " + pair.Value;
+                }
+                args.Add(arg);
+            }
+
+            return string.Join(" ", args.ToArray());
         }
 
         private void RemoveDbPath()

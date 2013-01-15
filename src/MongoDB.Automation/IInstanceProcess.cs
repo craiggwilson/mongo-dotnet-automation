@@ -6,7 +6,7 @@ using System.Text;
 
 namespace MongoDB.Automation
 {
-    public interface IInstanceProcess<TSettings> where TSettings : IInstanceProcessSettings
+    public interface IInstanceProcess
     {
         /// <summary>
         /// Gets the address for the instance.
@@ -17,11 +17,6 @@ namespace MongoDB.Automation
         /// Indicates whether the process is currently running.
         /// </summary>
         bool IsRunning { get; }
-
-        /// <summary>
-        /// Gets the settings for the instance process.
-        /// </summary>
-        TSettings Settings { get; }
 
         /// <summary>
         /// Creates a MongoServer and connects to it.

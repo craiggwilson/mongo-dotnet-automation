@@ -18,8 +18,9 @@ namespace MongoDB.Automation
         private bool _hasArbiter;
         private string _replicaSetName;
 
-        public ReplicaSetController(IEnumerable<IInstanceProcess<ReplicaSetMemberSettings>> processes)
+        public ReplicaSetController(string replicaSetName, IEnumerable<IInstanceProcess> processes)
         {
+            _replicaSetName = replicaSetName;
             _members = new List<ReplicaSetMember>();
             _isReplicaSetInitiated = false;
             Initialize(processes);
@@ -41,12 +42,12 @@ namespace MongoDB.Automation
 
         public IEnumerable<MongoServerAddress> Secondaries
         {
-            get { return GetSecondaryMembers().Select(x => x.Process.Address); }
+            get { return GetSecondaryMembers().Select(x => x.Address); }
         }
 
         public IEnumerable<MongoServerAddress> Members
         {
-            get { return _members.Select(x => x.Process.Address); }
+            get { return _members.Select(x => x.Address); }
         }
 
         public string GetAddShardAddress()
@@ -173,23 +174,14 @@ namespace MongoDB.Automation
             _config["version"] = currentVersion + 1;
         }
 
-        private void Initialize(IEnumerable<IInstanceProcess<ReplicaSetMemberSettings>> processes)
+        private void Initialize(IEnumerable<IInstanceProcess> processes)
         {
-            _replicaSetName = processes.First().Settings.ReplicaSetName;
             _config = new BsonDocument("_id", _replicaSetName);
             BsonArray memberConfigs = new BsonArray();
             _config.Add("members", memberConfigs);
 
             processes.ForEach((i, process) =>
             {
-                if (process.Settings.ReplicaSetName != _replicaSetName)
-                {
-                    throw new InvalidOperationException(
-                        string.Format("There are at least two different replica set names specified: {0} and {1}",
-                            _replicaSetName,
-                            process.Settings.ReplicaSetName));
-                }
-
                 var memberConfig = new BsonDocument
                 {
                     { "_id", i },
@@ -197,11 +189,11 @@ namespace MongoDB.Automation
                     { "host", process.Address.ToString() }
                 };
 
-                if (process.Settings.IsArbiter)
-                {
-                    memberConfig["arbiterOnly"] = 1;
-                    _hasArbiter = true;
-                }
+                //if (process.Settings.IsArbiter)
+                //{
+                //    memberConfig["arbiterOnly"] = 1;
+                //    _hasArbiter = true;
+                //}
 
                 memberConfigs.Add(memberConfig);
 
@@ -284,6 +276,7 @@ namespace MongoDB.Automation
 
             IncrementConfigVersion();
 
+            Config.Out.WriteLine("Reconfiguring replica set.", _replicaSetName);
             primaryMember.RunReplicaSetReconfig(_config);
 
             WaitForFullAvailability(TimeSpan.FromMinutes(5));
@@ -338,17 +331,12 @@ namespace MongoDB.Automation
         private class ReplicaSetMember
         {
             public BsonDocument ConfigEntry;
-            public IInstanceProcess<ReplicaSetMemberSettings> Process;
+            public IInstanceProcess Process;
             public ReplicaSetMemberType Type;
 
             public MongoServerAddress Address
             {
                 get { return Process.Address; }
-            }
-
-            public string ReplicaSetName
-            {
-                get { return Process.Settings.ReplicaSetName; }
             }
 
             public int Id
@@ -386,7 +374,6 @@ namespace MongoDB.Automation
 
             public CommandResult RunReplicaSetReconfig(BsonDocument config)
             {
-                Config.Out.WriteLine("Reconfiguring replica set.", Process.Settings.ReplicaSetName);
                 return Process.RunAdminCommand(new CommandDocument 
                 {
                     { "replSetReconfig", config }

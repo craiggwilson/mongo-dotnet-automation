@@ -20,6 +20,11 @@ namespace MongoDB.Automation
 
         public MongoServer Connect(TimeSpan timeout)
         {
+            if (!IsRunning)
+            {
+                throw new AutomationException("Cannot connect to an instance that is not running.");
+            }
+
             var client = new MongoClient(string.Format("mongodb://{0}/?safe=true&slaveOk=true", Address));
             var server = client.GetServer();
             server.Connect(timeout);

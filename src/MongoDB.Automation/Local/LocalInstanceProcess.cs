@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 
-namespace MongoDB.Automation
+namespace MongoDB.Automation.Local
 {
     public sealed class LocalInstanceProcess : AbstractInstanceProcess
     {
@@ -17,15 +17,23 @@ namespace MongoDB.Automation
         private readonly Process _process;
         private bool _processIsSupposedToBeRunning;
 
-        public LocalInstanceProcess(string executable, IDictionary<string, string> arguments)
+        public LocalInstanceProcess(string executable)
+            : this(executable, new Dictionary<string, string>())
+        { }
+
+        public LocalInstanceProcess(string executable, IEnumerable<KeyValuePair<string, string>> arguments)
         {
-            if (string.IsNullOrEmpty("executable"))
+            if (string.IsNullOrEmpty("executable") || !File.Exists(executable))
             {
                 throw new ArgumentException("Cannot be null or empty.", "executable");
             }
 
+            var args = arguments == null
+                ? new Dictionary<string, string>()
+                : arguments.ToDictionary(x => x.Key, x => x.Value);
+
             string port;
-            if (!arguments.TryGetValue("port", out port))
+            if (!args.TryGetValue("port", out port))
             {
                 port = "27017"; // this is the default...
             }
@@ -36,14 +44,14 @@ namespace MongoDB.Automation
                 StartInfo = new ProcessStartInfo
                 {
                     FileName = executable,
-                    Arguments = GetCommandArguments(arguments),
+                    Arguments = GetCommandArguments(args),
                     CreateNoWindow = true,
                     LoadUserProfile = false,
                     UseShellExecute = false
                 }
             };
 
-            if (!arguments.TryGetValue("dbpath", out _dbPath))
+            if (!args.TryGetValue("dbpath", out _dbPath))
             {
                 _dbPath = "C:\\data\\db";
                 if (Environment.OSVersion.Platform == PlatformID.MacOSX || Environment.OSVersion.Platform == PlatformID.Unix)
@@ -52,7 +60,7 @@ namespace MongoDB.Automation
                 }
             }
 
-            arguments.TryGetValue("logpath", out _logPath);
+            args.TryGetValue("logpath", out _logPath);
         }
 
         public override MongoServerAddress Address
@@ -74,39 +82,26 @@ namespace MongoDB.Automation
 
             Config.Out.WriteLine("Starting {0} {1}.", _process.StartInfo.FileName, _process.StartInfo.Arguments);
 
-            if (!string.IsNullOrEmpty(_dbPath))
-            {
-                var exists = Directory.Exists(_dbPath);
-                if (exists && options == StartOptions.Clean)
-                {
-                    RemoveDbPath();
-                }
-                if (!exists)
-                {
-                    CreateDbPath();
-                }
-            }
-
-            if (!string.IsNullOrEmpty(_logPath))
-            {
-                var exists = File.Exists(_logPath);
-                if (exists && options == StartOptions.Clean)
-                {
-                    RemoveLogPath();
-                }
-            }
-
-            Config.Out.WriteLine("Starting {0} {1}.", _process.StartInfo.FileName, _process.StartInfo.Arguments);
-
+            EnsureDbPath(options);
+            RemoveLogPath(options);
+            
             _processIsSupposedToBeRunning = true;
-            _process.Start();
+
+            try
+            {
+                _process.Start();
+            }
+            catch(Exception ex)
+            {
+                Config.Error.WriteLine("Unable to start instance for address {0}. {1}", Address, ex);
+                throw;
+            }
+
             Util.Timeout(TimeSpan.FromSeconds(20), 
                 string.Format("Unable to start instance for address {0}.", Address), 
                 TimeSpan.FromSeconds(2),
-                remaining =>
-                {
-                    return IsRunning;
-                });
+                remaining => IsRunning);
+
             Config.Out.WriteLine("Process {0} started.", _process.Id);
         }
 
@@ -119,13 +114,13 @@ namespace MongoDB.Automation
             try
             {
                 Config.Out.WriteLine("Stopping instance for address {0}.", Address);
-                _processIsSupposedToBeRunning = false;
                 RunAdminCommand("shutdown");
             }
             catch (EndOfStreamException)
             { } // this is expected for shutdown
             finally
             {
+                _processIsSupposedToBeRunning = false;
                 Thread.Sleep(TimeSpan.FromSeconds(4));
                 if (!_process.HasExited)
                 {
@@ -152,7 +147,22 @@ namespace MongoDB.Automation
             }
         }
 
-        protected string GetCommandArguments(IDictionary<string, string> arguments)
+        private void EnsureDbPath(StartOptions options)
+        {
+            var dbPathExists = Directory.Exists(_dbPath);
+            if (dbPathExists && options == StartOptions.Clean)
+            {
+                RemoveDbPath();
+                dbPathExists = false;
+            }
+
+            if (!dbPathExists)
+            {
+                CreateDbPath();
+            }
+        }
+
+        private string GetCommandArguments(IDictionary<string, string> arguments)
         {
             List<string> args = new List<string>();
             foreach (var pair in arguments)
@@ -182,17 +192,25 @@ namespace MongoDB.Automation
             }
         }
 
-        private void RemoveLogPath()
+
+        private void RemoveLogPath(StartOptions options)
         {
-            Config.Out.WriteLine("Removing file at {0}", _logPath);
-            try
+            if (!string.IsNullOrEmpty(_logPath))
             {
-                File.Delete(_logPath);
-            }
-            catch (Exception ex)
-            {
-                Config.Error.WriteLine("Unable to remove file: {0}", ex.Message);
-                throw;
+                var exists = File.Exists(_logPath);
+                if (exists && options == StartOptions.Clean)
+                {
+                    Config.Out.WriteLine("Removing file at {0}", _logPath);
+                    try
+                    {
+                        File.Delete(_logPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        Config.Error.WriteLine("Unable to remove file: {0}", ex.Message);
+                        throw;
+                    }
+                }
             }
         }
     }

@@ -23,6 +23,7 @@ namespace MongoDB.Automation
             _replicaSetName = replicaSetName;
             _members = new List<ReplicaSetMember>();
             _isReplicaSetInitiated = false;
+            _hasArbiter = false;
             Initialize(processes);
         }
 
@@ -55,7 +56,7 @@ namespace MongoDB.Automation
             return string.Format("{0}/{1}", _replicaSetName, _members[0].Address);
         }
 
-        public void PrimaryIsAtAddress(MongoServerAddress address)
+        public void MakePrimary(MongoServerAddress address)
         {
             Config.Out.WriteLine("Forcing primary to be at address {0}.", address);
             Util.Timeout(TimeSpan.FromMinutes(5),

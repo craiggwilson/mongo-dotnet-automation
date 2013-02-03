@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MongoDB.Automation", "src\MongoDB.Automation\MongoDB.Automation.csproj", "{3BB3FE29-B289-4960-870F-704C7C1F4658}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MongoDB.Automation.Tests", "src\MongoDB.Automation.Tests\MongoDB.Automation.Tests.csproj", "{FF9C8DBC-A485-4989-A6AC-037E89759BE0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -13,6 +15,10 @@ Global
 		{3BB3FE29-B289-4960-870F-704C7C1F4658}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3BB3FE29-B289-4960-870F-704C7C1F4658}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3BB3FE29-B289-4960-870F-704C7C1F4658}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FF9C8DBC-A485-4989-A6AC-037E89759BE0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FF9C8DBC-A485-4989-A6AC-037E89759BE0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FF9C8DBC-A485-4989-A6AC-037E89759BE0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FF9C8DBC-A485-4989-A6AC-037E89759BE0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

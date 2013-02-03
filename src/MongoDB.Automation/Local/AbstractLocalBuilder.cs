@@ -7,13 +7,13 @@ using System.Text.RegularExpressions;
 
 namespace MongoDB.Automation.Local
 {
-    public abstract class LocalBuilder<T> : ILocalBuilder<T>
-        where T : LocalBuilder<T>
+    public abstract class AbstractLocalBuilder<T>
+        where T : AbstractLocalBuilder<T>
     {
         private readonly Dictionary<string, string> _arguments;
         private string _binPath;
 
-        public LocalBuilder()
+        public AbstractLocalBuilder()
         {
             _arguments = new Dictionary<string, string>();
         }

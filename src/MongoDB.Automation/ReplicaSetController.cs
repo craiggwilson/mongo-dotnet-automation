@@ -15,16 +15,55 @@ namespace MongoDB.Automation
         private BsonDocument _config;
         private readonly List<ReplicaSetMember> _members;
         private bool _isReplicaSetInitiated;
-        private bool _hasArbiter;
+        private int? _arbiterPort;
         private string _replicaSetName;
 
         public ReplicaSetController(string replicaSetName, IEnumerable<IInstanceProcess> processes)
         {
+            if (string.IsNullOrEmpty(replicaSetName))
+            {
+                throw new ArgumentException("Cannot be null or empty.", "replicaSetName");
+            }
+            if (processes == null || !processes.Any())
+            {
+                throw new ArgumentException("Cannot be null or empty.", "processes");
+            }
+
             _replicaSetName = replicaSetName;
             _members = new List<ReplicaSetMember>();
             _isReplicaSetInitiated = false;
-            _hasArbiter = false;
+            
             Initialize(processes);
+        }
+
+        public ReplicaSetController(string replicaSetName, IEnumerable<IInstanceProcess> processes, int arbiterPort)
+            : this(replicaSetName, processes)
+        {
+            _arbiterPort = arbiterPort;
+            if (!_members.Any(x => x.Address.Port == arbiterPort))
+            {
+                throw new ArgumentException("Process must exist with the specified port number.", "arbiterPort");
+            }
+        }
+
+        public MongoServerAddress Arbiter
+        {
+            get { return _members.Single(x => x.Address.Port == _arbiterPort.Value).Address; }
+        }
+
+        public bool HasArbiter
+        {
+            get { return _arbiterPort.HasValue; }
+        }
+
+        public IEnumerable<MongoServerAddress> Members
+        {
+            get { return _members.Select(x => x.Address); }
+        }
+
+        public string Name
+        {
+            get { return _replicaSetName; }
         }
 
         public MongoServerAddress Primary
@@ -44,11 +83,6 @@ namespace MongoDB.Automation
         public IEnumerable<MongoServerAddress> Secondaries
         {
             get { return GetSecondaryMembers().Select(x => x.Address); }
-        }
-
-        public IEnumerable<MongoServerAddress> Members
-        {
-            get { return _members.Select(x => x.Address); }
         }
 
         public string GetAddShardAddress()
@@ -190,11 +224,10 @@ namespace MongoDB.Automation
                     { "host", process.Address.ToString() }
                 };
 
-                //if (process.Settings.IsArbiter)
-                //{
-                //    memberConfig["arbiterOnly"] = 1;
-                //    _hasArbiter = true;
-                //}
+                if (_arbiterPort.HasValue && process.Address.Port == _arbiterPort.Value)
+                {
+                    memberConfig["arbiterOnly"] = 1;
+                }
 
                 memberConfigs.Add(memberConfig);
 
@@ -212,8 +245,8 @@ namespace MongoDB.Automation
         private bool IsFullyAvailable(MongoServer server)
         {
             int expectedPrimaries = 1;
-            int expectedSecondaries = _hasArbiter ? _members.Count - 2 : _members.Count - 1;
-            int expectedArbiters = _hasArbiter ? 1 : 0;
+            int expectedSecondaries = HasArbiter ? _members.Count - 2 : _members.Count - 1;
+            int expectedArbiters = HasArbiter ? 1 : 0;
 
             return MatchesAvailability(server, expectedPrimaries, expectedSecondaries, expectedArbiters);
         }

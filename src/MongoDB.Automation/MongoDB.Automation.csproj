@@ -49,13 +49,12 @@
   <ItemGroup>
     <Compile Include="AbstractInstanceProcess.cs" />
     <Compile Include="AutomationException.cs" />
-    <Compile Include="Local\LocalBuilder.cs" />
+    <Compile Include="Local\LocalReplicaSetMongodBuilder.cs" />
+    <Compile Include="Local\AbstractLocalMongodBuilder.cs" />
+    <Compile Include="Local\AbstractLocalBuilder.cs" />
     <Compile Include="Local\LocalInstanceProcess.cs" />
     <Compile Include="Local\LocalMongodBuilder.cs" />
     <Compile Include="Local\LocalReplicatSetBuilder.cs" />
-    <Compile Include="Local\ILocalBuilder.cs" />
-    <Compile Include="Local\ILocalMongodBuilder.cs" />
-    <Compile Include="Local\ILocalReplicaSetMemberBuilder.cs" />
     <Compile Include="StartOptions.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="IShardableInstanceProcessController.cs" />

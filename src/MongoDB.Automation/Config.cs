@@ -42,6 +42,11 @@ namespace MongoDB.Automation
             get { return 27017; }
         }
 
+        public static string DefaultReplicaSetName
+        {
+            get { return "rs0"; }
+        }
+
         /// <summary>
         /// Gets the TextWriter to send errors.
         /// </summary>

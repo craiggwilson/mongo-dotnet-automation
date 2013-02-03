@@ -8,10 +8,12 @@ namespace MongoDB.Automation.Local
     public interface ILocalMongodBuilder<TBuilder> : ILocalBuilder<TBuilder>
         where TBuilder : ILocalMongodBuilder<TBuilder>
     {
-        TBuilder DbPath(Func<LocalReplicaSetMember, string> dbPathFactory);
-
-        TBuilder Ipv6();
+        TBuilder DbPath(string dbPath);
 
         TBuilder NoJournal();
+
+        TBuilder NoPrealloc();
+
+        TBuilder SmallFiles();
     }
 }

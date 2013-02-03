@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Text.RegularExpressions;
 
 namespace MongoDB.Automation.Local
 {
@@ -20,10 +21,10 @@ namespace MongoDB.Automation.Local
         public LocalInstanceProcess(string executable)
             : this(executable, new Dictionary<string, string>())
         { }
-
+        
         public LocalInstanceProcess(string executable, IEnumerable<KeyValuePair<string, string>> arguments)
         {
-            if (string.IsNullOrEmpty("executable") || !File.Exists(executable))
+            if (string.IsNullOrEmpty(executable))
             {
                 throw new ArgumentException("Cannot be null or empty.", "executable");
             }
@@ -35,8 +36,17 @@ namespace MongoDB.Automation.Local
             string port;
             if (!args.TryGetValue("port", out port))
             {
-                port = "27017"; // this is the default...
+                port = Config.DefaultPort.ToString();
+                args.Add("port", port);
             }
+
+            if (!args.TryGetValue("dbpath", out _dbPath))
+            {
+                _dbPath = Config.DefaultDbPath;
+                args.Add("dbpath", _dbPath);
+            }
+
+            args.TryGetValue("logpath", out _logPath);
 
             _address = new MongoServerAddress("localhost", int.Parse(port));
             _process = new Process
@@ -47,20 +57,10 @@ namespace MongoDB.Automation.Local
                     Arguments = GetCommandArguments(args),
                     CreateNoWindow = true,
                     LoadUserProfile = false,
+                    RedirectStandardOutput = true,
                     UseShellExecute = false
                 }
             };
-
-            if (!args.TryGetValue("dbpath", out _dbPath))
-            {
-                _dbPath = "C:\\data\\db";
-                if (Environment.OSVersion.Platform == PlatformID.MacOSX || Environment.OSVersion.Platform == PlatformID.Unix)
-                {
-                    _dbPath = "/data/db";
-                }
-            }
-
-            args.TryGetValue("logpath", out _logPath);
         }
 
         public override MongoServerAddress Address
@@ -68,9 +68,19 @@ namespace MongoDB.Automation.Local
             get { return _address; }
         }
 
+        public string Arguments
+        {
+            get { return _process.StartInfo.Arguments; }
+        }
+
         public override bool IsRunning
         {
             get { return _processIsSupposedToBeRunning && !_process.HasExited; }
+        }
+
+        public string ReadOutput()
+        {
+            return _process.StandardOutput.ReadToEnd();
         }
 
         public override void Start(StartOptions options)
@@ -136,6 +146,7 @@ namespace MongoDB.Automation.Local
 
         private void CreateDbPath()
         {
+            Config.Out.WriteLine("Creating directory at {0}", _dbPath);
             try
             {
                 Directory.CreateDirectory(_dbPath);
@@ -160,22 +171,6 @@ namespace MongoDB.Automation.Local
             {
                 CreateDbPath();
             }
-        }
-
-        private string GetCommandArguments(IDictionary<string, string> arguments)
-        {
-            List<string> args = new List<string>();
-            foreach (var pair in arguments)
-            {
-                string arg = "--" + pair.Key;
-                if (pair.Value != null)
-                {
-                    arg += " " + pair.Value;
-                }
-                args.Add(arg);
-            }
-
-            return string.Join(" ", args.ToArray());
         }
 
         private void RemoveDbPath()
@@ -211,6 +206,87 @@ namespace MongoDB.Automation.Local
                         throw;
                     }
                 }
+            }
+        }
+
+        private static string GetCommandArguments(IEnumerable<KeyValuePair<string,string>> arguments)
+        {
+            // This is a simple topological sort.
+
+            var remaining = arguments.Select(x => new CommandLineArgument(x.Key, x.Value)).ToList();
+            var list = new List<CommandLineArgument>();
+            var set = new Queue<CommandLineArgument>(remaining.Where(x => x.Dependencies.Count == 0));
+            
+            remaining = remaining.Where(x => x.Dependencies.Count > 0).ToList();
+            if (set.Count == 0)
+            {
+                throw new AutomationException("Every argument depends on another argument. At least one argument must exist that has no dependencies.");
+            }
+
+            while (set.Count > 0)
+            {
+                var current = set.Dequeue();
+                list.Add(current);
+
+                foreach (var node in remaining.Where(x => x.Dependencies.Contains(current.Name)).ToList())
+                {
+                    node.ReplaceDependency(current.Name, current.Value);
+
+                    if (node.Dependencies.Count == 0)
+                    {
+                        set.Enqueue(node);
+                        remaining.Remove(node);
+                    }
+                }
+            }
+
+            if (remaining.Count != 0)
+            {
+                // TODO: explain which nodes had problems...
+                throw new AutomationException("A cycle exists where two arguments depend on each other. Remove the cycle and try again.");
+            }
+
+            List<string> args = new List<string>();
+            foreach (var arg in list)
+            {
+                string actual = "--" + arg.Name;
+                if (arg.Value != null)
+                {
+                    actual += " " + arg.Value;
+                }
+                args.Add(actual);
+            }
+
+            return string.Join(" ", args.ToArray());
+        }
+
+        private class CommandLineArgument
+        {
+            private static readonly Regex _dependenciesRegex = new Regex(@"^(.*?(\{(?<KeyName>[a-zA-Z0-9]+)})?)*$",
+                RegexOptions.Compiled | RegexOptions.Singleline);
+
+            public string Name;
+            public string Value;
+            public List<string> Dependencies;
+
+            public CommandLineArgument(string name, string value)
+            {
+                Name = name;
+                Value = value;
+                Dependencies = GetDependencies(value);
+            }
+
+            public void ReplaceDependency(string name, string value)
+            {
+                Value = Value.Replace("{" + name + "}", value);
+                Dependencies = GetDependencies(Value);
+            }
+
+            private static List<string> GetDependencies(string value)
+            {
+                var match = _dependenciesRegex.Match(value);
+                var group = match.Groups["KeyName"];
+                return group.Captures.OfType<Capture>().Select(x => x.Value).ToList();
             }
         }
     }

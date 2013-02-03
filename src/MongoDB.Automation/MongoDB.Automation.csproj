@@ -49,9 +49,9 @@
   <ItemGroup>
     <Compile Include="AbstractInstanceProcess.cs" />
     <Compile Include="AutomationException.cs" />
-    <Compile Include="Local\LocalInstanceProcess.cs" />
     <Compile Include="Local\LocalBuilder.cs" />
-    <Compile Include="Local\LocalReplicaSetMember.cs" />
+    <Compile Include="Local\LocalInstanceProcess.cs" />
+    <Compile Include="Local\LocalMongodBuilder.cs" />
     <Compile Include="Local\LocalReplicatSetBuilder.cs" />
     <Compile Include="Local\ILocalBuilder.cs" />
     <Compile Include="Local\ILocalMongodBuilder.cs" />

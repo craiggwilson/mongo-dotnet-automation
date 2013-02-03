@@ -55,6 +55,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AbstractInstanceProcessTests.cs" />
+    <Compile Include="Local\LocalMongodBuilderTests.cs" />
     <Compile Include="Local\LocalInstanceProcessTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

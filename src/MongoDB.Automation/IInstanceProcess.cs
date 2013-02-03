@@ -19,7 +19,7 @@ namespace MongoDB.Automation
         bool IsRunning { get; }
 
         /// <summary>
-        /// Creates a MongoServer and connects to it.
+        /// Connects to the instance.
         /// </summary>
         /// <returns>A connected MongoServer.</returns>
         MongoServer Connect();

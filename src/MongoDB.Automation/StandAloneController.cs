@@ -21,6 +21,16 @@ namespace MongoDB.Automation
             _instanceProcess = instanceProcess;
         }
 
+        public MongoServer Connect()
+        {
+            return Connect(TimeSpan.FromMinutes(1));
+        }
+
+        public MongoServer Connect(TimeSpan timeout)
+        {
+            return _instanceProcess.Connect(timeout);
+        }
+
         public string GetAddShardAddress()
         {
             return _instanceProcess.Address.ToString();

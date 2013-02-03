@@ -10,12 +10,36 @@ namespace MongoDB.Automation
     {
         private static readonly object _writerLock = new object();
         private static Func<TextWriter> _error;
-        private static Func<TextWriter> _writer;
+        private static Func<TextWriter> _out;
 
         static Config()
         {
             _error = () => Console.Error;
-            _writer = () => Console.Out;
+            _out = () => Console.Out;
+        }
+
+        /// <summary>
+        /// Gets the default db path.
+        /// </summary>
+        public static string DefaultDbPath
+        {
+            get
+            {
+                if (Environment.OSVersion.Platform == PlatformID.MacOSX || Environment.OSVersion.Platform == PlatformID.Unix)
+                {
+                    return "/data/db";
+                }
+
+                return "c:\\data\\db";
+            }
+        }
+
+        /// <summary>
+        /// Gets the default port.
+        /// </summary>
+        public static int DefaultPort
+        {
+            get { return 27017; }
         }
 
         /// <summary>
@@ -41,7 +65,7 @@ namespace MongoDB.Automation
             {
                 lock (_writerLock)
                 {
-                    return _writer();
+                    return _out();
                 }
             }
         }
@@ -78,7 +102,7 @@ namespace MongoDB.Automation
 
             lock (_writerLock)
             {
-                _writer = () => writer;
+                _out = () => writer;
             }
         }
     }

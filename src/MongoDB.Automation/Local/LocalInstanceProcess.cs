@@ -46,7 +46,7 @@ namespace MongoDB.Automation.Local
                     FileName = executable,
                     Arguments = GetCommandArguments(resolved),
                     CreateNoWindow = true,
-                    WindowStyle = ProcessWindowStyle.Hidden
+                    WindowStyle = ProcessWindowStyle.Hidden,
                 }
             };
         }

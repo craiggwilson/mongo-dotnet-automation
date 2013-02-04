@@ -26,7 +26,7 @@ namespace MongoDB.Automation.Local
             var processes = _templates
                 .Select(x => x.Value
                     .Port(x.Key)
-                    .SetName(_setName)
+                    .ReplSet(_setName)
                     .Build())
                 .OfType<IInstanceProcess>();
 

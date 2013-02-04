@@ -12,9 +12,9 @@ namespace MongoDB.Automation.Local
             return Set("oplogSize", sizeInMegabytes.ToString());
         }
 
-        public LocalReplicaSetMongodBuilder SetName(string setName)
+        public LocalReplicaSetMongodBuilder ReplSet(string replSet)
         {
-            return Set("setName", setName);
+            return Set("replSet", replSet);
         }
     }
 }

@@ -29,36 +29,24 @@ namespace MongoDB.Automation.Local
                 throw new ArgumentException("Cannot be null or empty.", "executable");
             }
 
-            var args = arguments == null
-                ? new Dictionary<string, string>()
+            var args = arguments == null 
+                ? new Dictionary<string,string>()
                 : arguments.ToDictionary(x => x.Key, x => x.Value);
 
-            string port;
-            if (!args.TryGetValue("port", out port))
-            {
-                port = Config.DefaultPort.ToString();
-                args.Add("port", port);
-            }
+            var resolved = ResolveCommandArguments(args);
 
-            if (!args.TryGetValue("dbpath", out _dbPath))
-            {
-                _dbPath = Config.DefaultDbPath;
-                args.Add("dbpath", _dbPath);
-            }
+            _dbPath = resolved["dbpath"];
+            resolved.TryGetValue("logpath", out _logPath);
 
-            args.TryGetValue("logpath", out _logPath);
-
-            _address = new MongoServerAddress("localhost", int.Parse(port));
+            _address = new MongoServerAddress("localhost", int.Parse(resolved["port"]));
             _process = new Process
             {
                 StartInfo = new ProcessStartInfo
                 {
                     FileName = executable,
-                    Arguments = GetCommandArguments(args),
+                    Arguments = GetCommandArguments(resolved),
                     CreateNoWindow = true,
-                    LoadUserProfile = false,
-                    RedirectStandardOutput = true,
-                    UseShellExecute = false
+                    WindowStyle = ProcessWindowStyle.Hidden
                 }
             };
         }
@@ -78,11 +66,6 @@ namespace MongoDB.Automation.Local
             get { return _processIsSupposedToBeRunning && !_process.HasExited; }
         }
 
-        public string ReadOutput()
-        {
-            return _process.StandardOutput.ReadToEnd();
-        }
-
         public override void Start(StartOptions options)
         {
             if (IsRunning)
@@ -100,17 +83,20 @@ namespace MongoDB.Automation.Local
             try
             {
                 _process.Start();
+                // let's make sure we waited long enough for the process to die...
+                Thread.Sleep(TimeSpan.FromSeconds(2)); 
+                Retry.WithTimeout(
+                    _ => IsRunning,
+                    TimeSpan.FromSeconds(20),
+                    TimeSpan.FromSeconds(2));
             }
             catch(Exception ex)
             {
-                Config.Error.WriteLine("Unable to start instance for address {0}. {1}", Address, ex);
-                throw;
+                var sb = new StringBuilder();
+                sb.AppendFormat("Unable to start instance for address {0}.", Address).AppendLine();
+                sb.AppendFormat("Command Line: {0}", Arguments).AppendLine();
+                throw new AutomationException(sb.ToString(), ex);
             }
-
-            Util.Timeout(TimeSpan.FromSeconds(20), 
-                string.Format("Unable to start instance for address {0}.", Address), 
-                TimeSpan.FromSeconds(2),
-                remaining => IsRunning);
 
             Config.Out.WriteLine("Process {0} started.", _process.Id);
         }
@@ -147,15 +133,7 @@ namespace MongoDB.Automation.Local
         private void CreateDbPath()
         {
             Config.Out.WriteLine("Creating directory at {0}", _dbPath);
-            try
-            {
-                Directory.CreateDirectory(_dbPath);
-            }
-            catch (Exception ex)
-            {
-                Config.Error.WriteLine("Unable to create directory: {0}", ex.Message);
-                throw;
-            }
+            Directory.CreateDirectory(_dbPath);
         }
 
         private void EnsureDbPath(StartOptions options)
@@ -176,17 +154,8 @@ namespace MongoDB.Automation.Local
         private void RemoveDbPath()
         {
             Config.Out.WriteLine("Removing directory at {0}", _dbPath);
-            try
-            {
-                Directory.Delete(_dbPath, true);
-            }
-            catch (Exception ex)
-            {
-                Config.Error.WriteLine("Unable to remove directory: {0}", ex.Message);
-                throw;
-            }
+            Directory.Delete(_dbPath, true);
         }
-
 
         private void RemoveLogPath(StartOptions options)
         {
@@ -196,25 +165,26 @@ namespace MongoDB.Automation.Local
                 if (exists && options == StartOptions.Clean)
                 {
                     Config.Out.WriteLine("Removing file at {0}", _logPath);
-                    try
-                    {
-                        File.Delete(_logPath);
-                    }
-                    catch (Exception ex)
-                    {
-                        Config.Error.WriteLine("Unable to remove file: {0}", ex.Message);
-                        throw;
-                    }
+                    File.Delete(_logPath);
                 }
             }
         }
 
-        private static string GetCommandArguments(IEnumerable<KeyValuePair<string,string>> arguments)
+        private static Dictionary<string, string> ResolveCommandArguments(Dictionary<string,string> arguments)
         {
+            if (!arguments.ContainsKey("port"))
+            {
+                arguments.Add("port", Config.DefaultPort.ToString());
+            }
+            if (!arguments.ContainsKey("dbpath"))
+            {
+                arguments.Add("dbpath", Config.DefaultDbPath);
+            }
+
             // This is a simple topological sort.
 
             var remaining = arguments.Select(x => new CommandLineArgument(x.Key, x.Value)).ToList();
-            var list = new List<CommandLineArgument>();
+            var result = new Dictionary<string, string>();
             var set = new Queue<CommandLineArgument>(remaining.Where(x => x.Dependencies.Count == 0));
             
             remaining = remaining.Where(x => x.Dependencies.Count > 0).ToList();
@@ -226,7 +196,7 @@ namespace MongoDB.Automation.Local
             while (set.Count > 0)
             {
                 var current = set.Dequeue();
-                list.Add(current);
+                result.Add(current.Name, current.Value);
 
                 foreach (var node in remaining.Where(x => x.Dependencies.Contains(current.Name)).ToList())
                 {
@@ -246,10 +216,15 @@ namespace MongoDB.Automation.Local
                 throw new AutomationException("A cycle exists where two arguments depend on each other. Remove the cycle and try again.");
             }
 
+            return result;
+        }
+
+        private static string GetCommandArguments(IEnumerable<KeyValuePair<string,string>> arguments)
+        {
             List<string> args = new List<string>();
-            foreach (var arg in list)
+            foreach (var arg in arguments)
             {
-                string actual = "--" + arg.Name;
+                string actual = "--" + arg.Key;
                 if (arg.Value != null)
                 {
                     actual += " " + arg.Value;
@@ -278,12 +253,16 @@ namespace MongoDB.Automation.Local
 
             public void ReplaceDependency(string name, string value)
             {
-                Value = Value.Replace("{" + name + "}", value);
+                Value = Value.Replace("{" + name + "}", value ?? name);
                 Dependencies = GetDependencies(Value);
             }
 
             private static List<string> GetDependencies(string value)
             {
+                if (value == null)
+                {
+                    return new List<string>();
+                }
                 var match = _dependenciesRegex.Match(value);
                 var group = match.Groups["KeyName"];
                 return group.Captures.OfType<Capture>().Select(x => x.Value).ToList();

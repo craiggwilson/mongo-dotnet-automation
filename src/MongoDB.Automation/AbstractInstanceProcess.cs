@@ -27,7 +27,15 @@ namespace MongoDB.Automation
 
             var client = new MongoClient(string.Format("mongodb://{0}/?safe=true&slaveOk=true", Address));
             var server = client.GetServer();
-            server.Connect(timeout);
+            Retry.WithTimeout(
+                remaining =>
+                {
+                    server.Connect(remaining);
+                    return true;
+                },
+                timeout,
+                TimeSpan.FromSeconds(5));
+
             return server;
         }
 
@@ -52,14 +60,14 @@ namespace MongoDB.Automation
         {
             Config.Out.WriteLine("Waiting for mongod at address {0} to become available.", Address);
 
-            Util.Timeout(timeout,
-                string.Format("Unable to connect to instance for address {0}", Address),
-                TimeSpan.FromSeconds(10),
-                remaining =>
+            Retry.WithTimeout(
+                remaining => 
                 {
                     Connect(remaining);
                     return true;
-                });
+                },
+                timeout,
+                TimeSpan.FromSeconds(10));
         }
     }
 }

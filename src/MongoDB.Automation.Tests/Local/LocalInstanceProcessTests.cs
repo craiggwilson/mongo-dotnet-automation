@@ -63,7 +63,7 @@ namespace MongoDB.Automation.Local
         public void Constructor_should_resolve_dependencies()
         {
             var builder = new LocalMongodBuilder()
-                .BinPath("something")
+                .BinPath(TestConfiguration.GetMongodPath())
                 .Set("dep1", "{dep2}\\exists\\{port}") // port always exists
                 .Set("dep2", "c:\\{nodep}")
                 .Set("nodep", "yeah");
@@ -77,38 +77,35 @@ namespace MongoDB.Automation.Local
         }
 
         [Test]
-        public void Should_not_be_running_after_construction()
+        public void Running_should_be_false_after_construction()
         {
-            var subject = new LocalInstanceProcess(@"blah", null);
+            var subject = new LocalInstanceProcess(TestConfiguration.GetMongodPath(), null);
             subject.IsRunning.Should().BeFalse();
         }
 
         [Test]
-        public void Should_have_an_address_of_localhost_on_port_27017()
+        public void Address_should_have_a_default_of_localhost_on_port_27017()
         {
-            var subject = new LocalInstanceProcess(@"blah", null);
+            var subject = new LocalInstanceProcess(TestConfiguration.GetMongodPath(), null);
             subject.Address.ShouldBeEquivalentTo(new MongoServerAddress("localhost", 27017));
         }
 
         [Test]
-        public void Should_create_data_directory_after_starting()
+        [KillMongoProcesses]
+        public void Start_should_create_data_directory()
         {
-            var subject = new LocalInstanceProcess(@"C:\MongoDB\mongodb-win32-x86_64-2.2.2\bin\mongod.exe", null);
+            var subject = new LocalInstanceProcess(TestConfiguration.GetMongodPath(), null);
             subject.Start(StartOptions.Clean);
             Directory.Exists(@"c:\data\db").Should().BeTrue();
-            subject.Stop();
         }
 
         [Test]
-        public void Should_be_able_to_connect_after_starting()
+        [KillMongoProcesses]
+        public void Connect_should_be_successful_when_IsRunning_is_true()
         {
-            var sb = new StringBuilder();
-            Config.SetOut(new StringWriter(sb));
-            Config.SetError(new StringWriter(sb));
-            var subject = new LocalInstanceProcess(@"C:\MongoDB\mongodb-win32-x86_64-2.2.2\bin\mongod.exe", null);
+            var subject = new LocalInstanceProcess(TestConfiguration.GetMongodPath(), null);
             subject.Start(StartOptions.Clean);
             var server = subject.Connect();
-            subject.Stop();
         }
     }
 }

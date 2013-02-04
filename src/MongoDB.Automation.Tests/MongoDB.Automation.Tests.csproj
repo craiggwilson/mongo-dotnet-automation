@@ -46,6 +46,7 @@
       <HintPath>..\..\packages\NUnit.2.6.2\lib\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -55,11 +56,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AbstractInstanceProcessTests.cs" />
+    <Compile Include="KillMongoProcessesAttribute.cs" />
     <Compile Include="Local\LocalMongodBuilderTests.cs" />
     <Compile Include="Local\LocalInstanceProcessTests.cs" />
     <Compile Include="Local\LocalReplicaSetBuilderTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReplicaSetControllerTests.cs" />
+    <Compile Include="TestConfiguration.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MongoDB.Automation\MongoDB.Automation.csproj">
@@ -68,6 +71,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

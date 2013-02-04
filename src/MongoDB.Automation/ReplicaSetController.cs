@@ -12,8 +12,11 @@ namespace MongoDB.Automation
 {
     public class ReplicaSetController : IShardableInstanceProcessController
     {
-        private BsonDocument _config;
+        private static readonly TimeSpan _defaultRetryTimeout = TimeSpan.FromMinutes(1);
+        private static readonly TimeSpan _defaultRetryDelay = TimeSpan.FromSeconds(5);
+
         private readonly List<ReplicaSetMember> _members;
+        private BsonDocument _config;
         private bool _isReplicaSetInitiated;
         private int? _arbiterPort;
         private string _replicaSetName;
@@ -48,7 +51,16 @@ namespace MongoDB.Automation
 
         public MongoServerAddress Arbiter
         {
-            get { return _members.Single(x => x.Address.Port == _arbiterPort.Value).Address; }
+            get 
+            {
+                var arbiter = GetArbiter();
+                if (arbiter == null)
+                {
+                    return null;
+                }
+
+                return arbiter.Address;
+            }
         }
 
         public bool HasArbiter
@@ -93,10 +105,10 @@ namespace MongoDB.Automation
         public void MakePrimary(MongoServerAddress address)
         {
             Config.Out.WriteLine("Forcing primary to be at address {0}.", address);
-            Util.Timeout(TimeSpan.FromMinutes(5),
-                string.Format("Unable to make member at address {0} primary.", address),
-                TimeSpan.FromSeconds(10),
-                remaining => TryMakePrimaryAtAddress(address));
+            Retry.WithTimeout(
+                _ => TryMakePrimaryAtAddress(address),
+                TimeSpan.FromMinutes(5),
+                TimeSpan.FromSeconds(10));
             Config.Out.WriteLine("Primary is at address {0}.", address);
         }
 
@@ -146,31 +158,51 @@ namespace MongoDB.Automation
                 m.WaitForAvailability(timeout);
             });
 
-            var server = GetRunningMember().Connect();
-            Util.Timeout(timeout, 
-                string.Format("Unable to become fully available.", _members[0], timeout.TotalMilliseconds),
-                TimeSpan.FromSeconds(5),
+            Retry.WithTimeout(
                 remaining =>
                 {
-                    server.Connect(remaining);
+                    var member = GetRunningMember();
+                    if (member == null)
+                    {
+                        return false;
+                    }
+                    var server = member.Connect(remaining);
                     return IsFullyAvailable(server);
-                });
+                },
+                timeout, 
+                _defaultRetryDelay);
             Config.Out.WriteLine("Replica set is fully available.");
         }
 
         public void WaitForPrimary(TimeSpan timeout)
         {
             Config.Out.WriteLine("Waiting for primary.");
-            var server = GetRunningMember().Connect();
-            Util.Timeout(timeout,
-                string.Format("Unable to get a primary.", _members[0], timeout.TotalMilliseconds),
-                TimeSpan.FromSeconds(5),
+            Retry.WithTimeout(
                 remaining =>
                 {
-                    server.Connect(remaining);
+                    var member = GetRunningMember();
+                    if (member == null)
+                    {
+                        return false;
+                    }
+                    var server = member.Connect(remaining);
                     return IsPrimaryAvailable(server);
-                });
+                },
+                timeout,
+                _defaultRetryDelay);
+
             Config.Out.WriteLine("Primary is at address {0}.", GetPrimaryMember().Address);
+        }
+
+        private ReplicaSetMember GetArbiter()
+        {
+            var running = GetRunningMember();
+            if (running == null)
+            {
+                return null;
+            }
+            UpdateMemberStatuses(running.Connect(_defaultRetryTimeout));
+            return _members.SingleOrDefault(x => x.Type == ReplicaSetMemberType.Arbiter);
         }
 
         private ReplicaSetMember GetMember(MongoServerAddress address)
@@ -187,7 +219,12 @@ namespace MongoDB.Automation
         private ReplicaSetMember GetPrimaryMember()
         {
             var running = GetRunningMember();
-            UpdateMemberStatuses(running.Connect());
+            if (running == null)
+            {
+                return null;
+            }
+
+            UpdateMemberStatuses(running.Connect(_defaultRetryTimeout));
             return _members.SingleOrDefault(x => x.Type == ReplicaSetMemberType.Primary);
         }
 
@@ -199,7 +236,11 @@ namespace MongoDB.Automation
         private IEnumerable<ReplicaSetMember> GetSecondaryMembers()
         {
             var running = GetRunningMember();
-            UpdateMemberStatuses(running.Connect());
+            if (running == null)
+            {
+                return Enumerable.Empty<ReplicaSetMember>();
+            }
+            UpdateMemberStatuses(running.Connect(_defaultRetryTimeout));
             return _members.Where(x => x.Type == ReplicaSetMemberType.Secondary);
         }
 
@@ -287,7 +328,7 @@ namespace MongoDB.Automation
 
         private bool TryMakePrimaryAtAddress(MongoServerAddress address)
         {
-            UpdateMemberStatuses(GetRunningMember().Connect());
+            UpdateMemberStatuses(GetRunningMember().Connect(_defaultRetryTimeout));
             var primaryMember = GetPrimaryMember();
             if (primaryMember.Address == address)
             {
@@ -388,9 +429,9 @@ namespace MongoDB.Automation
                 get { return Process.IsRunning; }
             }
 
-            public MongoServer Connect()
+            public MongoServer Connect(TimeSpan timeout)
             {
-                return Process.Connect();
+                return Process.Connect(timeout);
             }
 
             public CommandResult RunReplicaSetGetStatus()

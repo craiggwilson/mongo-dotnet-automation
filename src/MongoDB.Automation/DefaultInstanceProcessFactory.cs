@@ -8,14 +8,19 @@ namespace MongoDB.Automation
 {
     public class DefaultInstanceProcessFactory : IInstanceProcessFactory
     {
-        public IInstanceProcess CreateInstanceProcess(IInstanceProcessConfiguration configuration)
+        public virtual IInstanceProcess Create(IInstanceProcessConfiguration configuration)
         {
             if (configuration is ILocalInstanceProcessConfiguration)
             {
-                return new LocalInstanceProcess((ILocalInstanceProcessConfiguration)configuration);
+                return Create((ILocalInstanceProcessConfiguration)configuration);
             }
 
             throw new NotSupportedException("Unknown configuration type.");
+        }
+
+        private IInstanceProcess Create(ILocalInstanceProcessConfiguration configuration)
+        {
+            return new LocalInstanceProcess(configuration.BinPath, configuration.Arguments);
         }
     }
 }

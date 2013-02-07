@@ -49,9 +49,7 @@
   <ItemGroup>
     <Compile Include="AbstractInstanceProcess.cs" />
     <Compile Include="AutomationException.cs" />
-    <Compile Include="Configuration\ConfigurationType.cs" />
-    <Compile Include="Configuration\IConfiguration.cs" />
-    <Compile Include="Configuration\IConfigurationProvider.cs" />
+    <Compile Include="Configuration\IInstanceProcessControllerConfiguration.cs" />
     <Compile Include="Configuration\IInstanceProcessConfiguration.cs" />
     <Compile Include="Configuration\IReplicaSetConfiguration.cs" />
     <Compile Include="Configuration\ILocalInstanceProcessConfiguration.cs" />
@@ -60,7 +58,10 @@
     <Compile Include="Configuration\AbstractLocalMongodBuilder.cs" />
     <Compile Include="Configuration\AbstractLocalConfigurationBuilder.cs" />
     <Compile Include="Configuration\ReplicaSetConfiguration.cs" />
+    <Compile Include="DefaultInstanceProcessControllerFactory.cs" />
     <Compile Include="DefaultInstanceProcessFactory.cs" />
+    <Compile Include="Automate.cs" />
+    <Compile Include="IInstanceProcessControllerFactory.cs" />
     <Compile Include="IInstanceProcessFactory.cs" />
     <Compile Include="LocalInstanceProcess.cs" />
     <Compile Include="Configuration\LocalMongodConfigurationBuilder.cs" />

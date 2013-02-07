@@ -11,7 +11,7 @@ using MongoDB.Automation.Configuration;
 
 namespace MongoDB.Automation
 {
-    public sealed class LocalInstanceProcess : AbstractInstanceProcess, IConfigurationProvider
+    public sealed class LocalInstanceProcess : AbstractInstanceProcess
     {
         private readonly MongoServerAddress _address;
         private readonly Dictionary<string, string> _arguments;
@@ -20,20 +20,17 @@ namespace MongoDB.Automation
         private readonly Process _process;
         private bool _processIsSupposedToBeRunning;
 
-        public LocalInstanceProcess(ILocalInstanceProcessConfiguration configuration)
+        public LocalInstanceProcess(string binPath, IEnumerable<KeyValuePair<string,string>> arguments)
         {
-            if (configuration == null)
+            if (string.IsNullOrEmpty(binPath))
             {
-                throw new ArgumentNullException("configuration");
-            }
-
-            if (string.IsNullOrEmpty(configuration.BinPath))
-            {
-                throw new ArgumentException("Cannot be null or empty.", "executable");
+                throw new ArgumentException("Cannot be null or empty.", "binPath");
             }
 
             // store arguments before we resolve dependencies so configuration is transportable.
-            _arguments = configuration.Arguments.ToDictionary(x => x.Key, x => x.Value);
+            _arguments = arguments == null 
+                ? new Dictionary<string,string>()
+                : arguments.ToDictionary(x => x.Key, x => x.Value);
 
             var resolved = ResolveCommandArguments(_arguments);
 
@@ -45,7 +42,7 @@ namespace MongoDB.Automation
             {
                 StartInfo = new ProcessStartInfo
                 {
-                    FileName = configuration.BinPath,
+                    FileName = binPath,
                     Arguments = GetCommandArguments(resolved),
                     CreateNoWindow = !string.IsNullOrEmpty(_logPath),
                     WindowStyle = string.IsNullOrEmpty(_logPath) 
@@ -70,7 +67,7 @@ namespace MongoDB.Automation
             get { return _processIsSupposedToBeRunning && !_process.HasExited; }
         }
 
-        public override IConfiguration GetConfiguration()
+        public override IInstanceProcessConfiguration GetConfiguration()
         {
             return new LocalInstanceProcessConfiguration(_process.StartInfo.FileName, _arguments);
         }

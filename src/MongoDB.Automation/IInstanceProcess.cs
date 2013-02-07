@@ -7,7 +7,7 @@ using MongoDB.Automation.Configuration;
 
 namespace MongoDB.Automation
 {
-    public interface IInstanceProcess : IConfigurationProvider
+    public interface IInstanceProcess
     {
         /// <summary>
         /// Gets the address for the instance.
@@ -30,6 +30,12 @@ namespace MongoDB.Automation
         /// </summary>
         /// <returns>A connected MongoServer.</returns>
         MongoServer Connect(TimeSpan timeout);
+
+        /// <summary>
+        /// Gets the configuration.
+        /// </summary>
+        /// <returns>The configuration for the instance process.</returns>
+        IInstanceProcessConfiguration GetConfiguration();
 
         /// <summary>
         /// Runs a command against the admin database.

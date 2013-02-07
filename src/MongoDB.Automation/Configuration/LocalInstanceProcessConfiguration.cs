@@ -29,10 +29,5 @@ namespace MongoDB.Automation.Configuration
         {
             get { return _binPath; }
         }
-
-        public ConfigurationType Type
-        {
-            get { return ConfigurationType.LocalInstanceProcess; }
-        }
     }
 }

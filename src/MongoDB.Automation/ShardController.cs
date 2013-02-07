@@ -26,7 +26,7 @@ namespace MongoDB.Automation
             _isInitiated = false;
         }
 
-        public IConfiguration GetConfiguration()
+        public IInstanceProcessControllerConfiguration GetConfiguration()
         {
             throw new NotImplementedException();
         }

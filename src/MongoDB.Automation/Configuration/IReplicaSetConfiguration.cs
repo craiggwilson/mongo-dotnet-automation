@@ -5,7 +5,7 @@ using System.Text;
 
 namespace MongoDB.Automation.Configuration
 {
-    public interface IReplicaSetConfiguration : IConfiguration
+    public interface IReplicaSetConfiguration : IInstanceProcessControllerConfiguration
     {
         string ReplicaSetName { get; }
 

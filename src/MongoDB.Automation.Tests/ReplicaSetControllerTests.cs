@@ -16,29 +16,25 @@ namespace MongoDB.Automation
         [Test]
         public void Constructor_should_throw_if_replicaSetName_is_null_or_empty()
         {
-            var factory = Substitute.For<IInstanceProcessFactory>();
             var process = Substitute.For<IInstanceProcess>();
-            factory.CreateInstanceProcess(null).ReturnsForAnyArgs(x => process);
 
-            var memberConfig = new LocalInstanceProcessConfiguration("something");
-            var replSetConfig = new ReplicaSetConfiguration("", new[] { memberConfig });
-
-            Action ctor = () => new ReplicaSetController(replSetConfig, factory);
+            Action ctor = () => new ReplicaSetController("", new[] { process });
 
             ctor.ShouldThrow<ArgumentException>();
         }
 
         [Test]
-        public void Constructor_should_throw_if_processes_is_null_or_empty()
+        public void Constructor_should_throw_if_processes_is_null()
         {
-            var factory = Substitute.For<IInstanceProcessFactory>();
-            var process = Substitute.For<IInstanceProcess>();
-            factory.CreateInstanceProcess(null).ReturnsForAnyArgs(x => process);
+            Action ctor = () => new ReplicaSetController(TestConfiguration.GetMongodPath(), null);
 
-            var memberConfig = new LocalInstanceProcessConfiguration("something");
-            var replSetConfig = new ReplicaSetConfiguration("", Enumerable.Empty<IInstanceProcessConfiguration>());
+            ctor.ShouldThrow<ArgumentException>();
+        }
 
-            Action ctor = () => new ReplicaSetController(replSetConfig, factory);
+        [Test]
+        public void Constructor_should_throw_if_processes_is_empty()
+        {
+            Action ctor = () => new ReplicaSetController(TestConfiguration.GetMongodPath(), Enumerable.Empty<IInstanceProcess>());
 
             ctor.ShouldThrow<ArgumentException>();
         }
@@ -107,7 +103,11 @@ namespace MongoDB.Automation
                 .Port(30000, 30001, 30002, memberConfiguration)
                 .Build();
 
-            return new ReplicaSetController(replicaSetConfiguration, new DefaultInstanceProcessFactory());
+            var fact = new DefaultInstanceProcessFactory();
+
+            return new ReplicaSetController(replicaSetConfiguration.ReplicaSetName,
+                replicaSetConfiguration.Members.Select(m => fact.Create(m)),
+                replicaSetConfiguration.ArbiterPort);
         }
     }
 }

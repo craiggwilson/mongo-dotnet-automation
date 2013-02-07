@@ -22,23 +22,26 @@ namespace MongoDB.Automation
         private int? _arbiterPort;
         private string _replicaSetName;
 
-        public ReplicaSetController(IReplicaSetConfiguration configuration, IInstanceProcessFactory instanceProcessFactory)
+        public ReplicaSetController(string replicaSetName, IEnumerable<IInstanceProcess> processes)
+            : this(replicaSetName, processes, null)
+        { }
+
+        public ReplicaSetController(string replicaSetName, IEnumerable<IInstanceProcess> processes, int? arbiterPort)
         {
-            if (string.IsNullOrEmpty(configuration.ReplicaSetName))
+            if (string.IsNullOrEmpty(replicaSetName))
             {
-                throw new ArgumentException("Cannot be null or empty.", "configuration.ReplicaSetName");
+                throw new ArgumentException("Cannot be null or empty.", "replicaSetName");
             }
-            if (configuration.Members == null || !configuration.Members.Any())
+            if (processes == null || !processes.Any())
             {
-                throw new ArgumentException("Cannot be null or empty.", "configuration.Members");
+                throw new ArgumentException("Cannot be null or empty.", "processes");
             }
 
-            _replicaSetName = configuration.ReplicaSetName;
+            _replicaSetName = replicaSetName;
             _members = new List<ReplicaSetMember>();
             _isReplicaSetInitiated = false;
-            _arbiterPort = configuration.ArbiterPort;
+            _arbiterPort = arbiterPort;
 
-            var processes = configuration.Members.Select(m => instanceProcessFactory.CreateInstanceProcess(m));
             if(_arbiterPort.HasValue && !processes.Any(x => x.Address.Port == _arbiterPort.Value))
             {
                 throw new ArgumentException("When an arbiter port is specified, it must exist in the members.", "configuration.ArbiterPort");
@@ -100,7 +103,7 @@ namespace MongoDB.Automation
             return string.Format("{0}/{1}", _replicaSetName, _members[0].Address);
         }
 
-        public IConfiguration GetConfiguration()
+        public IInstanceProcessControllerConfiguration GetConfiguration()
         {
             var members = _members.Select(x => x.Process.GetConfiguration()).OfType<IInstanceProcessConfiguration>();
             return new ReplicaSetConfiguration(_replicaSetName, members, _arbiterPort);

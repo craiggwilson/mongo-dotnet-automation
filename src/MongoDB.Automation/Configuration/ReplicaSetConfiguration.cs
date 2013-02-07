@@ -36,10 +36,5 @@ namespace MongoDB.Automation.Configuration
         {
             get { return _arbiterPort; }
         }
-
-        public ConfigurationType Type
-        {
-            get { return ConfigurationType.ReplicaSetController; }
-        }
     }
 }

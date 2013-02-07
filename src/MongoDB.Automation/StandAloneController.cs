@@ -32,7 +32,7 @@ namespace MongoDB.Automation
             return _instanceProcess.Connect(timeout);
         }
 
-        public IConfiguration GetConfiguration()
+        public IInstanceProcessControllerConfiguration GetConfiguration()
         {
             throw new NotImplementedException();
         }

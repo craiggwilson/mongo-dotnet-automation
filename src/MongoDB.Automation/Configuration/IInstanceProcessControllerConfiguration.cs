@@ -5,8 +5,6 @@ using System.Text;
 
 namespace MongoDB.Automation.Configuration
 {
-    public interface IConfigurationProvider
-    {
-        IConfiguration GetConfiguration();
-    }
+    public interface IInstanceProcessControllerConfiguration
+    { }
 }

@@ -40,7 +40,7 @@ namespace MongoDB.Automation
             return server;
         }
 
-        public abstract IConfiguration GetConfiguration();
+        public abstract IInstanceProcessConfiguration GetConfiguration();
 
         public CommandResult RunAdminCommand(string commandName)
         {

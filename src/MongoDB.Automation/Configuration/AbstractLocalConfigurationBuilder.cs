@@ -39,14 +39,14 @@ namespace MongoDB.Automation.Configuration
             return (T)this;
         }
 
-        public ILocalInstanceProcessConfiguration Build()
+        public ILocalProcessConfiguration Build()
         {
             if (_binPath == null)
             {
                 throw new AutomationException("Must provide a binary path.");
             }
 
-            return new LocalInstanceProcessConfiguration(_binPath, _arguments);
+            return new LocalProcessConfiguration(_binPath, _arguments);
         }
 
         public T Config(string configPath)

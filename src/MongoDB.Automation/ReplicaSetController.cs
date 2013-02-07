@@ -11,7 +11,7 @@ using MongoDB.Automation.Configuration;
 
 namespace MongoDB.Automation
 {
-    public class ReplicaSetController : IShardableInstanceProcessController
+    public class ReplicaSetController : IShardablesController
     {
         private static readonly TimeSpan _defaultRetryTimeout = TimeSpan.FromMinutes(1);
         private static readonly TimeSpan _defaultRetryDelay = TimeSpan.FromSeconds(5);
@@ -22,11 +22,11 @@ namespace MongoDB.Automation
         private int? _arbiterPort;
         private string _replicaSetName;
 
-        public ReplicaSetController(string replicaSetName, IEnumerable<IInstanceProcess> processes)
+        public ReplicaSetController(string replicaSetName, IEnumerable<IProcess> processes)
             : this(replicaSetName, processes, null)
         { }
 
-        public ReplicaSetController(string replicaSetName, IEnumerable<IInstanceProcess> processes, int? arbiterPort)
+        public ReplicaSetController(string replicaSetName, IEnumerable<IProcess> processes, int? arbiterPort)
         {
             if (string.IsNullOrEmpty(replicaSetName))
             {
@@ -103,9 +103,9 @@ namespace MongoDB.Automation
             return string.Format("{0}/{1}", _replicaSetName, _members[0].Address);
         }
 
-        public IInstanceProcessControllerConfiguration GetConfiguration()
+        public IControllerConfiguration GetConfiguration()
         {
-            var members = _members.Select(x => x.Process.GetConfiguration()).OfType<IInstanceProcessConfiguration>();
+            var members = _members.Select(x => x.Process.GetConfiguration()).OfType<IProcessConfiguration>();
             return new ReplicaSetConfiguration(_replicaSetName, members, _arbiterPort);
         }
 
@@ -257,7 +257,7 @@ namespace MongoDB.Automation
             _config["version"] = currentVersion + 1;
         }
 
-        private void Initialize(IEnumerable<IInstanceProcess> processes)
+        private void Initialize(IEnumerable<IProcess> processes)
         {
 
             _config = new BsonDocument("_id", _replicaSetName);
@@ -414,7 +414,7 @@ namespace MongoDB.Automation
         private class ReplicaSetMember
         {
             public BsonDocument ConfigEntry;
-            public IInstanceProcess Process;
+            public IProcess Process;
             public ReplicaSetMemberType Type;
 
             public MongoServerAddress Address

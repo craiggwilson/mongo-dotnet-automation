@@ -5,16 +5,16 @@ using System.Text;
 
 namespace MongoDB.Automation.Configuration
 {
-    public class LocalInstanceProcessConfiguration : ILocalInstanceProcessConfiguration
+    public class LocalProcessConfiguration : ILocalProcessConfiguration
     {
         private readonly string _binPath;
         private readonly IEnumerable<KeyValuePair<string, string>> _arguments;
 
-        public LocalInstanceProcessConfiguration(string binPath)
+        public LocalProcessConfiguration(string binPath)
             : this(binPath, new Dictionary<string,string>())
         { }
 
-        public LocalInstanceProcessConfiguration(string binPath, IEnumerable<KeyValuePair<string,string>> arguments)
+        public LocalProcessConfiguration(string binPath, IEnumerable<KeyValuePair<string,string>> arguments)
         {
             _binPath = binPath;
             _arguments = arguments ?? new Dictionary<string, string>();

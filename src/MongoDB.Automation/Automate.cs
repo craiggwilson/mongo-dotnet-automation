@@ -8,29 +8,29 @@ namespace MongoDB.Automation
 {
     public class Automate
     {
-        private readonly IInstanceProcessControllerFactory _instanceProcessControllerFactory;
+        private readonly IControllerFactory _controllerFactory;
 
         public Automate()
         {
-            _instanceProcessControllerFactory = new DefaultInstanceProcessControllerFactory(new DefaultInstanceProcessFactory());
+            _controllerFactory = new DefaultControllerFactory(new DefaultProcessFactory());
         }
 
-        public Automate(IInstanceProcessControllerFactory instanceProcessControllerFactory)
+        public Automate(IControllerFactory controllerFactory)
         {
-            if (instanceProcessControllerFactory == null)
+            if (controllerFactory == null)
             {
-                throw new ArgumentNullException("instanceProcessControllerFactory");
+                throw new ArgumentNullException("controllerFactory");
             }
 
-            _instanceProcessControllerFactory = instanceProcessControllerFactory;
+            _controllerFactory = controllerFactory;
         }
 
-        public IInstanceProcessController From(IInstanceProcessControllerConfiguration configuration)
+        public IController From(IControllerConfiguration configuration)
         {
-            return _instanceProcessControllerFactory.Create(configuration);
+            return _controllerFactory.Create(configuration);
         }
 
-        public IInstanceProcessController BuildLocalReplicaSet(Action<LocalReplicaSetConfigurationBuilder> action)
+        public IController BuildLocalReplicaSet(Action<LocalReplicaSetConfigurationBuilder> action)
         {
             var builder = new LocalReplicaSetConfigurationBuilder();
             action(builder);

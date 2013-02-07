@@ -14,7 +14,7 @@ namespace MongoDB.Automation.Configuration
             : base(arguments)
         { }
 
-        public LocalReplicaSetMongodConfigurationBuilder(ILocalInstanceProcessConfiguration configuration)
+        public LocalReplicaSetMongodConfigurationBuilder(ILocalProcessConfiguration configuration)
             : base(configuration.Arguments)
         {
             BinPath(configuration.BinPath);

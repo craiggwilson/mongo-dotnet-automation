@@ -8,7 +8,7 @@ using MongoDB.Automation.Configuration;
 
 namespace MongoDB.Automation
 {
-    public abstract class AbstractInstanceProcess : IInstanceProcess
+    public abstract class AbstractProcess : IProcess
     {
         public abstract MongoServerAddress Address { get; }
 
@@ -40,7 +40,7 @@ namespace MongoDB.Automation
             return server;
         }
 
-        public abstract IInstanceProcessConfiguration GetConfiguration();
+        public abstract IProcessConfiguration GetConfiguration();
 
         public CommandResult RunAdminCommand(string commandName)
         {

@@ -10,12 +10,12 @@ using NUnit.Framework;
 namespace MongoDB.Automation
 {
     [TestFixture]
-    public class AbstractInstanceProcessTests
+    public class AbstractProcessTests
     {
         [Test]
         public void Should_throw_AutomationException_when_connecting_to_an_instance_that_is_not_running()
         {
-            var subject = Substitute.For<AbstractInstanceProcess>();
+            var subject = Substitute.For<AbstractProcess>();
             subject.IsRunning.Returns(false);
 
             Action connect = () => subject.Connect();

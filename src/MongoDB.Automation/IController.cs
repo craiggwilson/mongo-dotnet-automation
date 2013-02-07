@@ -7,13 +7,13 @@ using MongoDB.Driver;
 
 namespace MongoDB.Automation
 {
-    public interface IInstanceProcessController
+    public interface IController
     {
         /// <summary>
         /// Gets the configuration.
         /// </summary>
-        /// <returns>The configuration for the instance process controller.</returns>
-        IInstanceProcessControllerConfiguration GetConfiguration();
+        /// <returns>The configuration for the controller.</returns>
+        IControllerConfiguration GetConfiguration();
 
         /// <summary>
         /// Starts all the instances.

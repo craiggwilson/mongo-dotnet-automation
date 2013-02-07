@@ -6,8 +6,8 @@ using MongoDB.Automation.Configuration;
 
 namespace MongoDB.Automation
 {
-    public interface IInstanceProcessControllerFactory
+    public interface IControllerFactory
     {
-        IInstanceProcessController Create(IInstanceProcessControllerConfiguration configuration);
+        IController Create(IControllerConfiguration configuration);
     }
 }

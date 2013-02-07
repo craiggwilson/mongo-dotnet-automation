@@ -28,7 +28,7 @@ namespace MongoDB.Automation.Configuration
                 .Port(30001, new LocalReplicaSetMongodConfigurationBuilder().Port(30000).BinPath(TestConfiguration.GetMongodPath()).Build());
 
             var replSet = subject.Build();
-            replSet.Members.Should().Contain(x => ((ILocalInstanceProcessConfiguration)x).Arguments.Single(f => f.Key == "port").Value == "30001");
+            replSet.Members.Should().Contain(x => ((ILocalProcessConfiguration)x).Arguments.Single(f => f.Key == "port").Value == "30001");
         }
 
         [Test]
@@ -39,9 +39,9 @@ namespace MongoDB.Automation.Configuration
 
             var replSet = subject.Build();
             replSet.Members.Count().Should().Be(3);
-            replSet.Members.Should().Contain(x => ((ILocalInstanceProcessConfiguration)x).Arguments.Single(f => f.Key == "port").Value == "30000");
-            replSet.Members.Should().Contain(x => ((ILocalInstanceProcessConfiguration)x).Arguments.Single(f => f.Key == "port").Value == "30001");
-            replSet.Members.Should().Contain(x => ((ILocalInstanceProcessConfiguration)x).Arguments.Single(f => f.Key == "port").Value == "30002");
+            replSet.Members.Should().Contain(x => ((ILocalProcessConfiguration)x).Arguments.Single(f => f.Key == "port").Value == "30000");
+            replSet.Members.Should().Contain(x => ((ILocalProcessConfiguration)x).Arguments.Single(f => f.Key == "port").Value == "30001");
+            replSet.Members.Should().Contain(x => ((ILocalProcessConfiguration)x).Arguments.Single(f => f.Key == "port").Value == "30002");
         }
     }
 }

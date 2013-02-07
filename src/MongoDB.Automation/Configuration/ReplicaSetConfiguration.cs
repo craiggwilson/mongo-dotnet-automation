@@ -8,14 +8,14 @@ namespace MongoDB.Automation.Configuration
     public class ReplicaSetConfiguration : IReplicaSetConfiguration
     {
         private readonly string _replicaSet;
-        private readonly IEnumerable<IInstanceProcessConfiguration> _members;
+        private readonly IEnumerable<IProcessConfiguration> _members;
         private readonly int? _arbiterPort;
 
-        public ReplicaSetConfiguration(string replicaSet, IEnumerable<IInstanceProcessConfiguration> members)
+        public ReplicaSetConfiguration(string replicaSet, IEnumerable<IProcessConfiguration> members)
             : this(replicaSet, members, null)
         { }
 
-        public ReplicaSetConfiguration(string replicaSet, IEnumerable<IInstanceProcessConfiguration> members, int? arbiterPort)
+        public ReplicaSetConfiguration(string replicaSet, IEnumerable<IProcessConfiguration> members, int? arbiterPort)
         {
             _replicaSet = replicaSet;
             _members = members.ToList();
@@ -27,7 +27,7 @@ namespace MongoDB.Automation.Configuration
             get { return _replicaSet; }
         }
 
-        public IEnumerable<IInstanceProcessConfiguration> Members
+        public IEnumerable<IProcessConfiguration> Members
         {
             get { return _members; }
         }

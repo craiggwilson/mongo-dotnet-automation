@@ -55,10 +55,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AbstractInstanceProcessTests.cs" />
+    <Compile Include="AbstractProcessTests.cs" />
     <Compile Include="KillMongoProcessesAttribute.cs" />
     <Compile Include="Configuration\LocalMongodConfigurationBuilderTests.cs" />
-    <Compile Include="LocalInstanceProcessTests.cs" />
+    <Compile Include="LocalProcessTests.cs" />
     <Compile Include="Configuration\LocalReplicaSetConfigurationBuilderTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReplicaSetControllerTests.cs" />

@@ -8,18 +8,18 @@ using MongoDB.Automation.Configuration;
 
 namespace MongoDB.Automation
 {
-    public class StandAloneController : IShardableInstanceProcessController
+    public class StandAloneController : IShardablesController
     {
-        private readonly IInstanceProcess _instanceProcess;
+        private readonly IProcess _process;
 
-        public StandAloneController(IInstanceProcess instanceProcess)
+        public StandAloneController(IProcess process)
         {
-            if (instanceProcess == null)
+            if (process == null)
             {
-                throw new ArgumentNullException("instanceProcess");
+                throw new ArgumentNullException("process");
             }
 
-            _instanceProcess = instanceProcess;
+            _process = process;
         }
 
         public MongoServer Connect()
@@ -29,37 +29,37 @@ namespace MongoDB.Automation
 
         public MongoServer Connect(TimeSpan timeout)
         {
-            return _instanceProcess.Connect(timeout);
+            return _process.Connect(timeout);
         }
 
-        public IInstanceProcessControllerConfiguration GetConfiguration()
+        public IControllerConfiguration GetConfiguration()
         {
             throw new NotImplementedException();
         }
 
         public string GetAddShardAddress()
         {
-            return _instanceProcess.Address.ToString();
+            return _process.Address.ToString();
         }
 
         public void Start(StartOptions options)
         {
-            _instanceProcess.Start(options);
+            _process.Start(options);
         }
 
         public void Stop()
         {
-            _instanceProcess.Stop();
+            _process.Stop();
         }
 
         public void WaitForFullAvailability(TimeSpan timeout)
         {
-            if (!_instanceProcess.IsRunning)
+            if (!_process.IsRunning)
             {
-                _instanceProcess.Start(StartOptions.None);
+                _process.Start(StartOptions.None);
             }
 
-            _instanceProcess.WaitForAvailability(timeout);
+            _process.WaitForAvailability(timeout);
         }
     }
 }

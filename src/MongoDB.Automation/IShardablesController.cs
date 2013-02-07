@@ -5,7 +5,7 @@ using System.Text;
 
 namespace MongoDB.Automation
 {
-    public interface IShardableInstanceProcessController : IInstanceProcessController
+    public interface IShardablesController : IController
     {
         /// <summary>
         /// Gets the address used to add the process controller to a shard.

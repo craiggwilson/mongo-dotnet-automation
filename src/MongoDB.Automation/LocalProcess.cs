@@ -11,7 +11,7 @@ using MongoDB.Automation.Configuration;
 
 namespace MongoDB.Automation
 {
-    public sealed class LocalInstanceProcess : AbstractInstanceProcess
+    public sealed class LocalProcess : AbstractProcess
     {
         private readonly MongoServerAddress _address;
         private readonly Dictionary<string, string> _arguments;
@@ -20,7 +20,7 @@ namespace MongoDB.Automation
         private readonly Process _process;
         private bool _processIsSupposedToBeRunning;
 
-        public LocalInstanceProcess(string binPath, IEnumerable<KeyValuePair<string,string>> arguments)
+        public LocalProcess(string binPath, IEnumerable<KeyValuePair<string,string>> arguments)
         {
             if (string.IsNullOrEmpty(binPath))
             {
@@ -67,9 +67,9 @@ namespace MongoDB.Automation
             get { return _processIsSupposedToBeRunning && !_process.HasExited; }
         }
 
-        public override IInstanceProcessConfiguration GetConfiguration()
+        public override IProcessConfiguration GetConfiguration()
         {
-            return new LocalInstanceProcessConfiguration(_process.StartInfo.FileName, _arguments);
+            return new LocalProcessConfiguration(_process.StartInfo.FileName, _arguments);
         }
 
         public override void Start(StartOptions options)

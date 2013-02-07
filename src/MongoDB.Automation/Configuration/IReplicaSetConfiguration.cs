@@ -5,11 +5,11 @@ using System.Text;
 
 namespace MongoDB.Automation.Configuration
 {
-    public interface IReplicaSetConfiguration : IInstanceProcessControllerConfiguration
+    public interface IReplicaSetConfiguration : IControllerConfiguration
     {
         string ReplicaSetName { get; }
 
-        IEnumerable<IInstanceProcessConfiguration> Members { get; }
+        IEnumerable<IProcessConfiguration> Members { get; }
 
         int? ArbiterPort { get; }
     }

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace MongoDB.Automation.Configuration
 {
-    public interface ILocalInstanceProcessConfiguration : IInstanceProcessConfiguration
+    public interface ILocalProcessConfiguration : IProcessConfiguration
     {
         IEnumerable<KeyValuePair<string, string>> Arguments { get; }
 

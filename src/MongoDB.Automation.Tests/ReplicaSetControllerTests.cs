@@ -16,7 +16,7 @@ namespace MongoDB.Automation
         [Test]
         public void Constructor_should_throw_if_replicaSetName_is_null_or_empty()
         {
-            var process = Substitute.For<IInstanceProcess>();
+            var process = Substitute.For<IProcess>();
 
             Action ctor = () => new ReplicaSetController("", new[] { process });
 
@@ -34,7 +34,7 @@ namespace MongoDB.Automation
         [Test]
         public void Constructor_should_throw_if_processes_is_empty()
         {
-            Action ctor = () => new ReplicaSetController(TestConfiguration.GetMongodPath(), Enumerable.Empty<IInstanceProcess>());
+            Action ctor = () => new ReplicaSetController(TestConfiguration.GetMongodPath(), Enumerable.Empty<IProcess>());
 
             ctor.ShouldThrow<ArgumentException>();
         }
@@ -103,7 +103,7 @@ namespace MongoDB.Automation
                 .Port(30000, 30001, 30002, memberConfiguration)
                 .Build();
 
-            var fact = new DefaultInstanceProcessFactory();
+            var fact = new DefaultProcessFactory();
 
             return new ReplicaSetController(replicaSetConfiguration.ReplicaSetName,
                 replicaSetConfiguration.Members.Select(m => fact.Create(m)),

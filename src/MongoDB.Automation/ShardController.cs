@@ -11,14 +11,14 @@ using MongoDB.Automation.Configuration;
 
 namespace MongoDB.Automation
 {
-    public class ShardController : IInstanceProcessController
+    public class ShardController : IController
     {
         private readonly List<Shard> _shards;
-        private readonly List<IInstanceProcess> _configServers;
-        private readonly List<IInstanceProcess> _routers;
+        private readonly List<IProcess> _configServers;
+        private readonly List<IProcess> _routers;
         private bool _isInitiated;
 
-        public ShardController(IEnumerable<IShardableInstanceProcessController> shards, IEnumerable<IInstanceProcess> configServers, IEnumerable<IInstanceProcess> routers)
+        public ShardController(IEnumerable<IShardablesController> shards, IEnumerable<IProcess> configServers, IEnumerable<IProcess> routers)
         {
             _shards = shards.Select((x, i) => new Shard(string.Format("shard_{0}", i), x)).ToList();
             _configServers = configServers.ToList();
@@ -26,7 +26,7 @@ namespace MongoDB.Automation
             _isInitiated = false;
         }
 
-        public IInstanceProcessControllerConfiguration GetConfiguration()
+        public IControllerConfiguration GetConfiguration()
         {
             throw new NotImplementedException();
         }
@@ -69,10 +69,10 @@ namespace MongoDB.Automation
 
         private class Shard
         {
-            private readonly IShardableInstanceProcessController _controller;
+            private readonly IShardablesController _controller;
             private readonly string _name;
 
-            public Shard(string name, IShardableInstanceProcessController controller)
+            public Shard(string name, IShardablesController controller)
             {
                 _name = name;
                 _controller = controller;
@@ -83,7 +83,7 @@ namespace MongoDB.Automation
                 get { return _name; }
             }
 
-            public void AddToCluster(IInstanceProcess router)
+            public void AddToCluster(IProcess router)
             {
                 var address = _controller.GetAddShardAddress();
                 Config.Out.WriteLine("Adding shard to cluster: {0}.", address);

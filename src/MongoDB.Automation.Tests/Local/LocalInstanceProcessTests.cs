@@ -16,7 +16,8 @@ namespace MongoDB.Automation.Local
         [Test]
         public void Constructor_should_throw_an_exception_when_executable_is_null_or_empty()
         {
-            Action ctor = () => new LocalInstanceProcess("", new Dictionary<string, string>());
+            var config = new LocalInstanceProcessConfiguration("");
+            Action ctor = () => new LocalInstanceProcess(config);
             ctor.ShouldThrow<ArgumentException>();
         }
 
@@ -79,14 +80,16 @@ namespace MongoDB.Automation.Local
         [Test]
         public void Running_should_be_false_after_construction()
         {
-            var subject = new LocalInstanceProcess(TestConfiguration.GetMongodPath(), null);
+            var config = new LocalInstanceProcessConfiguration(TestConfiguration.GetMongodPath(), null);
+            var subject = new LocalInstanceProcess(config);
             subject.IsRunning.Should().BeFalse();
         }
 
         [Test]
         public void Address_should_have_a_default_of_localhost_on_port_27017()
         {
-            var subject = new LocalInstanceProcess(TestConfiguration.GetMongodPath(), null);
+            var config = new LocalInstanceProcessConfiguration(TestConfiguration.GetMongodPath(), null);
+            var subject = new LocalInstanceProcess(config);
             subject.Address.ShouldBeEquivalentTo(new MongoServerAddress("localhost", 27017));
         }
 
@@ -94,7 +97,8 @@ namespace MongoDB.Automation.Local
         [KillMongoProcesses]
         public void Start_should_create_data_directory()
         {
-            var subject = new LocalInstanceProcess(TestConfiguration.GetMongodPath(), null);
+            var config = new LocalInstanceProcessConfiguration(TestConfiguration.GetMongodPath(), null);
+            var subject = new LocalInstanceProcess(config);
             subject.Start(StartOptions.Clean);
             Directory.Exists(@"c:\data\db").Should().BeTrue();
         }
@@ -103,7 +107,8 @@ namespace MongoDB.Automation.Local
         [KillMongoProcesses]
         public void Connect_should_be_successful_when_IsRunning_is_true()
         {
-            var subject = new LocalInstanceProcess(TestConfiguration.GetMongodPath(), null);
+            var config = new LocalInstanceProcessConfiguration(TestConfiguration.GetMongodPath(), null);
+            var subject = new LocalInstanceProcess(config);
             subject.Start(StartOptions.Clean);
             var server = subject.Connect();
         }

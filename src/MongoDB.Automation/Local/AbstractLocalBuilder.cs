@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 
 namespace MongoDB.Automation.Local
 {
-    public abstract class AbstractLocalBuilder<T>
+    public abstract class AbstractLocalBuilder<T> : ILocalInstanceProcessConfiguration
         where T : AbstractLocalBuilder<T>
     {
         private readonly Dictionary<string, string> _arguments;
@@ -16,6 +16,16 @@ namespace MongoDB.Automation.Local
         public AbstractLocalBuilder()
         {
             _arguments = new Dictionary<string, string>();
+        }
+
+        string ILocalInstanceProcessConfiguration.BinPath
+        {
+            get { return _binPath; }
+        }
+
+        IEnumerable<KeyValuePair<string, string>> ILocalInstanceProcessConfiguration.Arguments
+        {
+            get { return _arguments; }
         }
 
         public T BindIPAddress(IPAddress ip)
@@ -36,7 +46,7 @@ namespace MongoDB.Automation.Local
                 throw new AutomationException("Must provide a binary path.");
             }
 
-            return new LocalInstanceProcess(_binPath, _arguments);
+            return new LocalInstanceProcess(this);
         }
 
         public T Config(string configPath)
@@ -98,6 +108,6 @@ namespace MongoDB.Automation.Local
             }
 
             return Set(new String('v', count));
-        }       
+        }
     }
 }

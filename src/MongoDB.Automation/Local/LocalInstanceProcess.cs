@@ -18,22 +18,21 @@ namespace MongoDB.Automation.Local
         private readonly Process _process;
         private bool _processIsSupposedToBeRunning;
 
-        public LocalInstanceProcess(string executable)
-            : this(executable, new Dictionary<string, string>())
-        { }
-        
-        public LocalInstanceProcess(string executable, IEnumerable<KeyValuePair<string, string>> arguments)
+        public LocalInstanceProcess(ILocalInstanceProcessConfiguration configuration)
         {
-            if (string.IsNullOrEmpty(executable))
+            if (configuration == null)
+            {
+                throw new ArgumentNullException("configuration");
+            }
+
+            if (string.IsNullOrEmpty(configuration.BinPath))
             {
                 throw new ArgumentException("Cannot be null or empty.", "executable");
             }
 
-            var args = arguments == null 
-                ? new Dictionary<string,string>()
-                : arguments.ToDictionary(x => x.Key, x => x.Value);
+            var arguments = configuration.Arguments.ToDictionary(x => x.Key, x => x.Value);
 
-            var resolved = ResolveCommandArguments(args);
+            var resolved = ResolveCommandArguments(arguments);
 
             _dbPath = resolved["dbpath"];
             resolved.TryGetValue("logpath", out _logPath);
@@ -43,10 +42,12 @@ namespace MongoDB.Automation.Local
             {
                 StartInfo = new ProcessStartInfo
                 {
-                    FileName = executable,
+                    FileName = configuration.BinPath,
                     Arguments = GetCommandArguments(resolved),
-                    CreateNoWindow = true,
-                    WindowStyle = ProcessWindowStyle.Hidden,
+                    CreateNoWindow = !string.IsNullOrEmpty(_logPath),
+                    WindowStyle = string.IsNullOrEmpty(_logPath) 
+                        ? ProcessWindowStyle.Normal
+                        : ProcessWindowStyle.Hidden
                 }
             };
         }

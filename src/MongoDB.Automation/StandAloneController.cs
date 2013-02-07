@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using MongoDB.Automation.Configuration;
 
 namespace MongoDB.Automation
 {
@@ -29,6 +30,11 @@ namespace MongoDB.Automation
         public MongoServer Connect(TimeSpan timeout)
         {
             return _instanceProcess.Connect(timeout);
+        }
+
+        public IConfiguration GetConfiguration()
+        {
+            throw new NotImplementedException();
         }
 
         public string GetAddShardAddress()

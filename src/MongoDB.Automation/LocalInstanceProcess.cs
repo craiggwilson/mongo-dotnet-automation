@@ -7,12 +7,14 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Text.RegularExpressions;
+using MongoDB.Automation.Configuration;
 
-namespace MongoDB.Automation.Local
+namespace MongoDB.Automation
 {
-    public sealed class LocalInstanceProcess : AbstractInstanceProcess
+    public sealed class LocalInstanceProcess : AbstractInstanceProcess, IConfigurationProvider
     {
         private readonly MongoServerAddress _address;
+        private readonly Dictionary<string, string> _arguments;
         private readonly string _dbPath;
         private readonly string _logPath;
         private readonly Process _process;
@@ -30,9 +32,10 @@ namespace MongoDB.Automation.Local
                 throw new ArgumentException("Cannot be null or empty.", "executable");
             }
 
-            var arguments = configuration.Arguments.ToDictionary(x => x.Key, x => x.Value);
+            // store arguments before we resolve dependencies so configuration is transportable.
+            _arguments = configuration.Arguments.ToDictionary(x => x.Key, x => x.Value);
 
-            var resolved = ResolveCommandArguments(arguments);
+            var resolved = ResolveCommandArguments(_arguments);
 
             _dbPath = resolved["dbpath"];
             resolved.TryGetValue("logpath", out _logPath);
@@ -65,6 +68,11 @@ namespace MongoDB.Automation.Local
         public override bool IsRunning
         {
             get { return _processIsSupposedToBeRunning && !_process.HasExited; }
+        }
+
+        public override IConfiguration GetConfiguration()
+        {
+            return new LocalInstanceProcessConfiguration(_process.StartInfo.FileName, _arguments);
         }
 
         public override void Start(StartOptions options)

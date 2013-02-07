@@ -5,10 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using FluentAssertions;
+using MongoDB.Automation.Configuration;
 using MongoDB.Driver;
 using System.IO;
 
-namespace MongoDB.Automation.Local
+namespace MongoDB.Automation
 {
     [TestFixture]
     public class LocalInstanceProcessTests
@@ -22,54 +23,58 @@ namespace MongoDB.Automation.Local
         }
 
         [Test]
-        public void Constructor_hould_throw_when_mutual_dependency_detected()
+        public void Constructor_should_throw_when_mutual_dependency_detected()
         {
-            var builder = new LocalMongodBuilder()
+            var config = new LocalMongodConfigurationBuilder()
                 .BinPath("something")
                 .Set("fake1", "{fake2}")
-                .Set("fake2", "{fake1}");
+                .Set("fake2", "{fake1}")
+                .Build();
 
-            Action build = () => builder.Build();
+            Action build = () => new LocalInstanceProcess(config);
             build.ShouldThrow<AutomationException>();
         }
 
         [Test]
         public void Constructor_should_throw_when_cyclic_dependency_detected()
         {
-            var builder = new LocalMongodBuilder()
-                .BinPath("something")
-                .Set("dep1", "{dep2}")
-                .Set("dep2", "{dep3}")
-                .Set("dep3", "{dep1}");
-
-            Action build = () => builder.Build();
-            build.ShouldThrow<AutomationException>();
-        }
-
-        [Test]
-        public void Constructor_hould_throw_when_cyclic_dependency_detected_2()
-        {
-            var builder = new LocalMongodBuilder()
+            var config = new LocalMongodConfigurationBuilder()
                 .BinPath("something")
                 .Set("dep1", "{dep2}")
                 .Set("dep2", "{dep3}")
                 .Set("dep3", "{dep1}")
-                .Set("nodep", "yeah");
+                .Build();
 
-            Action build = () => builder.Build();
+            Action build = () => new LocalInstanceProcess(config);
+            build.ShouldThrow<AutomationException>();
+        }
+
+        [Test]
+        public void Constructor_should_throw_when_cyclic_dependency_detected_2()
+        {
+            var config = new LocalMongodConfigurationBuilder()
+                .BinPath("something")
+                .Set("dep1", "{dep2}")
+                .Set("dep2", "{dep3}")
+                .Set("dep3", "{dep1}")
+                .Set("nodep", "yeah")
+                .Build();
+
+            Action build = () => new LocalInstanceProcess(config);
             build.ShouldThrow<AutomationException>();
         }
 
         [Test]
         public void Constructor_should_resolve_dependencies()
         {
-            var builder = new LocalMongodBuilder()
+            var config = new LocalMongodConfigurationBuilder()
                 .BinPath(TestConfiguration.GetMongodPath())
                 .Set("dep1", "{dep2}\\exists\\{port}") // port always exists
                 .Set("dep2", "c:\\{nodep}")
-                .Set("nodep", "yeah");
+                .Set("nodep", "yeah")
+                .Build();
 
-            var subject = builder.Build();
+            var subject = new LocalInstanceProcess(config);
             var arguments = subject.Arguments;
 
             arguments.Should().Contain("--dep1 c:\\yeah\\exists\\27017");

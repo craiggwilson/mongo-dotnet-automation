@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using MongoDB.Automation.Configuration;
 
 namespace MongoDB.Automation
 {
@@ -38,6 +39,8 @@ namespace MongoDB.Automation
 
             return server;
         }
+
+        public abstract IConfiguration GetConfiguration();
 
         public CommandResult RunAdminCommand(string commandName)
         {

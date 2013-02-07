@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace MongoDB.Automation.Local
+namespace MongoDB.Automation.Configuration
 {
     public class LocalInstanceProcessConfiguration : ILocalInstanceProcessConfiguration
     {
@@ -20,14 +20,19 @@ namespace MongoDB.Automation.Local
             _arguments = arguments ?? new Dictionary<string, string>();
         }
 
+        public IEnumerable<KeyValuePair<string, string>> Arguments
+        {
+            get { return _arguments; }
+        }
+
         public string BinPath
         {
             get { return _binPath; }
         }
 
-        public IEnumerable<KeyValuePair<string, string>> Arguments
+        public ConfigurationType Type
         {
-            get { return _arguments; }
+            get { return ConfigurationType.LocalInstanceProcess; }
         }
     }
 }

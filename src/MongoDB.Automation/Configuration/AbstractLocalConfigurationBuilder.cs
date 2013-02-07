@@ -5,27 +5,27 @@ using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace MongoDB.Automation.Local
+namespace MongoDB.Automation.Configuration
 {
-    public abstract class AbstractLocalBuilder<T> : ILocalInstanceProcessConfiguration
-        where T : AbstractLocalBuilder<T>
+    public abstract class AbstractLocalConfigurationBuilder<T>
+        where T : AbstractLocalConfigurationBuilder<T>
     {
         private readonly Dictionary<string, string> _arguments;
         private string _binPath;
 
-        public AbstractLocalBuilder()
+        protected AbstractLocalConfigurationBuilder()
         {
             _arguments = new Dictionary<string, string>();
         }
 
-        string ILocalInstanceProcessConfiguration.BinPath
+        protected AbstractLocalConfigurationBuilder(IEnumerable<KeyValuePair<string,string>> arguments)
         {
-            get { return _binPath; }
-        }
+            if (arguments == null)
+            {
+                throw new ArgumentNullException("arguments");
+            }
 
-        IEnumerable<KeyValuePair<string, string>> ILocalInstanceProcessConfiguration.Arguments
-        {
-            get { return _arguments; }
+            _arguments = arguments.ToDictionary(x => x.Key, x => x.Value);
         }
 
         public T BindIPAddress(IPAddress ip)
@@ -39,14 +39,14 @@ namespace MongoDB.Automation.Local
             return (T)this;
         }
 
-        public LocalInstanceProcess Build()
+        public ILocalInstanceProcessConfiguration Build()
         {
             if (_binPath == null)
             {
                 throw new AutomationException("Must provide a binary path.");
             }
 
-            return new LocalInstanceProcess(this);
+            return new LocalInstanceProcessConfiguration(_binPath, _arguments);
         }
 
         public T Config(string configPath)

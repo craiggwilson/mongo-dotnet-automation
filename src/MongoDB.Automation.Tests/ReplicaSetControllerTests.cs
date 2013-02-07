@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
-using MongoDB.Automation.Local;
+using MongoDB.Automation.Configuration;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -16,9 +16,14 @@ namespace MongoDB.Automation
         [Test]
         public void Constructor_should_throw_if_replicaSetName_is_null_or_empty()
         {
+            var factory = Substitute.For<IInstanceProcessFactory>();
             var process = Substitute.For<IInstanceProcess>();
+            factory.CreateInstanceProcess(null).ReturnsForAnyArgs(x => process);
 
-            Action ctor = () => new ReplicaSetController("", new[] { process });
+            var memberConfig = new LocalInstanceProcessConfiguration("something");
+            var replSetConfig = new ReplicaSetConfiguration("", new[] { memberConfig });
+
+            Action ctor = () => new ReplicaSetController(replSetConfig, factory);
 
             ctor.ShouldThrow<ArgumentException>();
         }
@@ -26,9 +31,14 @@ namespace MongoDB.Automation
         [Test]
         public void Constructor_should_throw_if_processes_is_null_or_empty()
         {
+            var factory = Substitute.For<IInstanceProcessFactory>();
             var process = Substitute.For<IInstanceProcess>();
+            factory.CreateInstanceProcess(null).ReturnsForAnyArgs(x => process);
 
-            Action ctor = () => new ReplicaSetController("rs0", Enumerable.Empty<IInstanceProcess>());
+            var memberConfig = new LocalInstanceProcessConfiguration("something");
+            var replSetConfig = new ReplicaSetConfiguration("", Enumerable.Empty<IInstanceProcessConfiguration>());
+
+            Action ctor = () => new ReplicaSetController(replSetConfig, factory);
 
             ctor.ShouldThrow<ArgumentException>();
         }
@@ -82,7 +92,7 @@ namespace MongoDB.Automation
 
         private ReplicaSetController CreateController()
         {
-            var mongodBuilder = new LocalReplicaSetMongodBuilder()
+            var memberConfiguration = new LocalReplicaSetMongodConfigurationBuilder()
                 .BinPath(TestConfiguration.GetMongodPath())
                 .DbPath("c:\\data\\db\\{replSet}\\{port}")
                 .LogPath("c:\\data\\db\\{replSet}\\{port}.log")
@@ -90,11 +100,14 @@ namespace MongoDB.Automation
                 .NoJournal()
                 .NoPrealloc()
                 .OplogSize(10)
-                .SmallFiles();
-
-            return new LocalReplicaSetBuilder()
-                .Port(30000, 30001, 30002, mongodBuilder)
+                .SmallFiles()
                 .Build();
+
+            var replicaSetConfiguration = new LocalReplicaSetConfigurationBuilder()
+                .Port(30000, 30001, 30002, memberConfiguration)
+                .Build();
+
+            return new ReplicaSetController(replicaSetConfiguration, new DefaultInstanceProcessFactory());
         }
     }
 }

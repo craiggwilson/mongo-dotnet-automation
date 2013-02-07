@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using MongoDB.Automation.Configuration;
 
 namespace MongoDB.Automation
 {
@@ -23,6 +24,11 @@ namespace MongoDB.Automation
             _configServers = configServers.ToList();
             _routers = routers.ToList();
             _isInitiated = false;
+        }
+
+        public IConfiguration GetConfiguration()
+        {
+            throw new NotImplementedException();
         }
 
         public void Start(StartOptions options)

@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using MongoDB.Automation.Configuration;
 using MongoDB.Driver;
 
 namespace MongoDB.Automation
 {
-    public interface IInstanceProcessController
+    public interface IInstanceProcessController : IConfigurationProvider
     {
         /// <summary>
         /// Starts all the instances.

@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using MongoDB.Automation.Configuration;
 
 namespace MongoDB.Automation
 {
@@ -21,32 +22,29 @@ namespace MongoDB.Automation
         private int? _arbiterPort;
         private string _replicaSetName;
 
-        public ReplicaSetController(string replicaSetName, IEnumerable<IInstanceProcess> processes)
+        public ReplicaSetController(IReplicaSetConfiguration configuration, IInstanceProcessFactory instanceProcessFactory)
         {
-            if (string.IsNullOrEmpty(replicaSetName))
+            if (string.IsNullOrEmpty(configuration.ReplicaSetName))
             {
-                throw new ArgumentException("Cannot be null or empty.", "replicaSetName");
+                throw new ArgumentException("Cannot be null or empty.", "configuration.ReplicaSetName");
             }
-            if (processes == null || !processes.Any())
+            if (configuration.Members == null || !configuration.Members.Any())
             {
-                throw new ArgumentException("Cannot be null or empty.", "processes");
+                throw new ArgumentException("Cannot be null or empty.", "configuration.Members");
             }
 
-            _replicaSetName = replicaSetName;
+            _replicaSetName = configuration.ReplicaSetName;
             _members = new List<ReplicaSetMember>();
             _isReplicaSetInitiated = false;
-            
-            Initialize(processes);
-        }
+            _arbiterPort = configuration.ArbiterPort;
 
-        public ReplicaSetController(string replicaSetName, IEnumerable<IInstanceProcess> processes, int arbiterPort)
-            : this(replicaSetName, processes)
-        {
-            _arbiterPort = arbiterPort;
-            if (!_members.Any(x => x.Address.Port == arbiterPort))
+            var processes = configuration.Members.Select(m => instanceProcessFactory.CreateInstanceProcess(m));
+            if(_arbiterPort.HasValue && !processes.Any(x => x.Address.Port == _arbiterPort.Value))
             {
-                throw new ArgumentException("Process must exist with the specified port number.", "arbiterPort");
+                throw new ArgumentException("When an arbiter port is specified, it must exist in the members.", "configuration.ArbiterPort");
             }
+
+            Initialize(processes);
         }
 
         public MongoServerAddress Arbiter
@@ -100,6 +98,12 @@ namespace MongoDB.Automation
         public string GetAddShardAddress()
         {
             return string.Format("{0}/{1}", _replicaSetName, _members[0].Address);
+        }
+
+        public IConfiguration GetConfiguration()
+        {
+            var members = _members.Select(x => x.Process.GetConfiguration()).OfType<IInstanceProcessConfiguration>();
+            return new ReplicaSetConfiguration(_replicaSetName, members, _arbiterPort);
         }
 
         public void MakePrimary(MongoServerAddress address)
@@ -252,6 +256,7 @@ namespace MongoDB.Automation
 
         private void Initialize(IEnumerable<IInstanceProcess> processes)
         {
+
             _config = new BsonDocument("_id", _replicaSetName);
             BsonArray memberConfigs = new BsonArray();
             _config.Add("members", memberConfigs);

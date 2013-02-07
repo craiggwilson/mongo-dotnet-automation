@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace MongoDB.Automation.Local
+namespace MongoDB.Automation.Configuration
 {
-    public interface ILocalInstanceProcessConfiguration
+    public interface ILocalInstanceProcessConfiguration : IInstanceProcessConfiguration
     {
-        string BinPath { get; }
-
         IEnumerable<KeyValuePair<string, string>> Arguments { get; }
+
+        string BinPath { get; }
     }
 }

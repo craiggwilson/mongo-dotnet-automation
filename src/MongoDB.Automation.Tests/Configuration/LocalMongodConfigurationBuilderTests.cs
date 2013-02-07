@@ -6,15 +6,15 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using NUnit.Framework;
 
-namespace MongoDB.Automation.Local
+namespace MongoDB.Automation.Configuration
 {
     [TestFixture]
-    public class LocalMongodBuilderTests
+    public class LocalMongodConfigurationBuilderTests
     {
         [Test]
         public void Build_should_throw_an_exception_when_bin_path_is_not_set()
         {
-            var builder = new LocalMongodBuilder();
+            var builder = new LocalMongodConfigurationBuilder();
 
             Action build = () => builder.Build();
             build.ShouldThrow<AutomationException>();

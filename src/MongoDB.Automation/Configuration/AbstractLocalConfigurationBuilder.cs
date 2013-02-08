@@ -11,7 +11,7 @@ namespace MongoDB.Automation.Configuration
         where T : AbstractLocalConfigurationBuilder<T>
     {
         private readonly Dictionary<string, string> _arguments;
-        private string _binPath;
+        private string _executablePath;
 
         protected AbstractLocalConfigurationBuilder()
         {
@@ -28,65 +28,65 @@ namespace MongoDB.Automation.Configuration
             _arguments = arguments.ToDictionary(x => x.Key, x => x.Value);
         }
 
-        public T BindIPAddress(IPAddress ip)
+        public T BindIP(IPAddress ip)
         {
-            return Set("bind_ip", ip.ToString());
-        }
-
-        public T BinPath(string binPath)
-        {
-            _binPath = binPath;
-            return (T)this;
+            return Set(Constants.BIND_IP, ip.ToString());
         }
 
         public ILocalProcessConfiguration Build()
         {
-            if (_binPath == null)
+            if (_executablePath == null)
             {
-                throw new AutomationException("Must provide a binary path.");
+                throw new AutomationException("Must provide an executable path.");
             }
 
-            return new LocalProcessConfiguration(_binPath, _arguments);
+            return new LocalProcessConfiguration(_executablePath, _arguments);
         }
 
         public T Config(string configPath)
         {
-            return Set("config", configPath);
+            return Set(Constants.CONFIG, configPath);
         }
 
-        public T IPV6()
+        public T ExecutablePath(string binPath)
         {
-            return Set("ipv6");
+            _executablePath = binPath;
+            return (T)this;
+        }
+
+        public T Ipv6()
+        {
+            return Set(Constants.IPV6);
         }
 
         public T KeyFile(string keyFilePath)
         {
-            return Set("keyFile", keyFilePath);
+            return Set(Constants.KEY_FILE, keyFilePath);
         }
 
         public T LogAppend()
         {
-            return Set("logappend");
+            return Set(Constants.LOG_APPEND);
         }
 
         public T LogPath(string logPath)
         {
-            return Set("logpath", logPath);
+            return Set(Constants.LOG_PATH, logPath);
         }
 
         public T MaxConnections(int maxConnections)
         {
-            return Set("maxConn", maxConnections.ToString());
+            return Set(Constants.MAX_CONN, maxConnections.ToString());
         }
 
         public T NoHttpInterface()
         {
-            return Set("nohttpinterface");
+            return Set(Constants.NO_HTTP_INTERFACE);
         }
 
         public T Port(int port)
         {
-            return Set("port", port.ToString());
+            return Set(Constants.PORT, port.ToString());
         }
 
         public T Set(string name)
@@ -107,7 +107,7 @@ namespace MongoDB.Automation.Configuration
                 return (T)this;
             }
 
-            return Set(new String('v', count));
+            return Set(new String(Constants.V, count));
         }
     }
 }

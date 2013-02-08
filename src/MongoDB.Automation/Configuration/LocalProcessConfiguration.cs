@@ -7,16 +7,16 @@ namespace MongoDB.Automation.Configuration
 {
     public class LocalProcessConfiguration : ILocalProcessConfiguration
     {
-        private readonly string _binPath;
+        private readonly string _executablePath;
         private readonly IEnumerable<KeyValuePair<string, string>> _arguments;
 
-        public LocalProcessConfiguration(string binPath)
-            : this(binPath, new Dictionary<string,string>())
+        public LocalProcessConfiguration(string executablePath)
+            : this(executablePath, new Dictionary<string,string>())
         { }
 
-        public LocalProcessConfiguration(string binPath, IEnumerable<KeyValuePair<string,string>> arguments)
+        public LocalProcessConfiguration(string executablePath, IEnumerable<KeyValuePair<string, string>> arguments)
         {
-            _binPath = binPath;
+            _executablePath = executablePath;
             _arguments = arguments ?? new Dictionary<string, string>();
         }
 
@@ -25,9 +25,9 @@ namespace MongoDB.Automation.Configuration
             get { return _arguments; }
         }
 
-        public string BinPath
+        public string ExecutablePath
         {
-            get { return _binPath; }
+            get { return _executablePath; }
         }
     }
 }

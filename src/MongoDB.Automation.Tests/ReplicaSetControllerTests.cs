@@ -89,7 +89,7 @@ namespace MongoDB.Automation
         private ReplicaSetController CreateController()
         {
             var memberConfiguration = new LocalReplicaSetMongodConfigurationBuilder()
-                .BinPath(TestConfiguration.GetMongodPath())
+                .ExecutablePath(TestConfiguration.GetMongodPath())
                 .DbPath("c:\\data\\db\\{replSet}\\{port}")
                 .LogPath("c:\\data\\db\\{replSet}\\{port}.log")
                 .NoHttpInterface()

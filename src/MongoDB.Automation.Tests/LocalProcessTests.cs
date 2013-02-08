@@ -26,12 +26,12 @@ namespace MongoDB.Automation
         public void Constructor_should_throw_when_mutual_dependency_detected()
         {
             var config = new LocalMongodConfigurationBuilder()
-                .BinPath("something")
+                .ExecutablePath("something")
                 .Set("fake1", "{fake2}")
                 .Set("fake2", "{fake1}")
                 .Build();
 
-            Action build = () => new LocalProcess(config.BinPath, config.Arguments);
+            Action build = () => new LocalProcess(config.ExecutablePath, config.Arguments);
             build.ShouldThrow<AutomationException>();
         }
 
@@ -39,13 +39,13 @@ namespace MongoDB.Automation
         public void Constructor_should_throw_when_cyclic_dependency_detected()
         {
             var config = new LocalMongodConfigurationBuilder()
-                .BinPath("something")
+                .ExecutablePath("something")
                 .Set("dep1", "{dep2}")
                 .Set("dep2", "{dep3}")
                 .Set("dep3", "{dep1}")
                 .Build();
 
-            Action build = () => new LocalProcess(config.BinPath, config.Arguments);
+            Action build = () => new LocalProcess(config.ExecutablePath, config.Arguments);
             build.ShouldThrow<AutomationException>();
         }
 
@@ -53,14 +53,14 @@ namespace MongoDB.Automation
         public void Constructor_should_throw_when_cyclic_dependency_detected_2()
         {
             var config = new LocalMongodConfigurationBuilder()
-                .BinPath("something")
+                .ExecutablePath("something")
                 .Set("dep1", "{dep2}")
                 .Set("dep2", "{dep3}")
                 .Set("dep3", "{dep1}")
                 .Set("nodep", "yeah")
                 .Build();
 
-            Action build = () => new LocalProcess(config.BinPath, config.Arguments);
+            Action build = () => new LocalProcess(config.ExecutablePath, config.Arguments);
             build.ShouldThrow<AutomationException>();
         }
 
@@ -68,13 +68,13 @@ namespace MongoDB.Automation
         public void Constructor_should_resolve_dependencies()
         {
             var config = new LocalMongodConfigurationBuilder()
-                .BinPath(TestConfiguration.GetMongodPath())
+                .ExecutablePath(TestConfiguration.GetMongodPath())
                 .Set("dep1", "{dep2}\\exists\\{port}") // port always exists
                 .Set("dep2", "c:\\{nodep}")
                 .Set("nodep", "yeah")
                 .Build();
 
-            var subject = new LocalProcess(config.BinPath, config.Arguments);
+            var subject = new LocalProcess(config.ExecutablePath, config.Arguments);
             var arguments = subject.Arguments;
 
             arguments.Should().Contain("--dep1 c:\\yeah\\exists\\27017");
@@ -86,7 +86,7 @@ namespace MongoDB.Automation
         public void Running_should_be_false_after_construction()
         {
             var config = new LocalProcessConfiguration(TestConfiguration.GetMongodPath(), null);
-            var subject = new LocalProcess(config.BinPath, config.Arguments);
+            var subject = new LocalProcess(config.ExecutablePath, config.Arguments);
             subject.IsRunning.Should().BeFalse();
         }
 
@@ -94,7 +94,7 @@ namespace MongoDB.Automation
         public void Address_should_have_a_default_of_localhost_on_port_27017()
         {
             var config = new LocalProcessConfiguration(TestConfiguration.GetMongodPath(), null);
-            var subject = new LocalProcess(config.BinPath, config.Arguments);
+            var subject = new LocalProcess(config.ExecutablePath, config.Arguments);
             subject.Address.ShouldBeEquivalentTo(new MongoServerAddress("localhost", 27017));
         }
 
@@ -103,7 +103,7 @@ namespace MongoDB.Automation
         public void Start_should_create_data_directory()
         {
             var config = new LocalProcessConfiguration(TestConfiguration.GetMongodPath(), null);
-            var subject = new LocalProcess(config.BinPath, config.Arguments);
+            var subject = new LocalProcess(config.ExecutablePath, config.Arguments);
             subject.Start(StartOptions.Clean);
             Directory.Exists(@"c:\data\db").Should().BeTrue();
         }
@@ -113,7 +113,7 @@ namespace MongoDB.Automation
         public void Connect_should_be_successful_when_IsRunning_is_true()
         {
             var config = new LocalProcessConfiguration(TestConfiguration.GetMongodPath(), null);
-            var subject = new LocalProcess(config.BinPath, config.Arguments);
+            var subject = new LocalProcess(config.ExecutablePath, config.Arguments);
             subject.Start(StartOptions.Clean);
             var server = subject.Connect();
         }

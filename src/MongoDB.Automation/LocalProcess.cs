@@ -20,11 +20,11 @@ namespace MongoDB.Automation
         private readonly Process _process;
         private bool _processIsSupposedToBeRunning;
 
-        public LocalProcess(string binPath, IEnumerable<KeyValuePair<string,string>> arguments)
+        public LocalProcess(string executablePath, IEnumerable<KeyValuePair<string,string>> arguments)
         {
-            if (string.IsNullOrEmpty(binPath))
+            if (string.IsNullOrEmpty(executablePath))
             {
-                throw new ArgumentException("Cannot be null or empty.", "binPath");
+                throw new ArgumentException("Cannot be null or empty.", "executablePath");
             }
 
             // store arguments before we resolve dependencies so configuration is transportable.
@@ -34,18 +34,20 @@ namespace MongoDB.Automation
 
             var resolved = ResolveCommandArguments(_arguments);
 
-            _dbPath = resolved["dbpath"];
-            resolved.TryGetValue("logpath", out _logPath);
+            _dbPath = resolved[Constants.DB_PATH];
+            resolved.TryGetValue(Constants.LOG_PATH, out _logPath);
 
-            _address = new MongoServerAddress("localhost", int.Parse(resolved["port"]));
+            bool useSysLog = resolved.ContainsKey(Constants.SYS_LOG);
+
+            _address = new MongoServerAddress("localhost", int.Parse(resolved[Constants.PORT]));
             _process = new Process
             {
                 StartInfo = new ProcessStartInfo
                 {
-                    FileName = binPath,
+                    FileName = executablePath,
                     Arguments = GetCommandArguments(resolved),
-                    CreateNoWindow = !string.IsNullOrEmpty(_logPath),
-                    WindowStyle = string.IsNullOrEmpty(_logPath) 
+                    CreateNoWindow = !string.IsNullOrEmpty(_logPath) || useSysLog,
+                    WindowStyle = string.IsNullOrEmpty(_logPath) && !useSysLog 
                         ? ProcessWindowStyle.Normal
                         : ProcessWindowStyle.Hidden
                 }
@@ -178,13 +180,13 @@ namespace MongoDB.Automation
 
         private static Dictionary<string, string> ResolveCommandArguments(Dictionary<string,string> arguments)
         {
-            if (!arguments.ContainsKey("port"))
+            if (!arguments.ContainsKey(Constants.PORT))
             {
-                arguments.Add("port", Config.DefaultPort.ToString());
+                arguments.Add(Constants.PORT, Config.DefaultPort.ToString());
             }
-            if (!arguments.ContainsKey("dbpath"))
+            if (!arguments.ContainsKey(Constants.DB_PATH))
             {
-                arguments.Add("dbpath", Config.DefaultDbPath);
+                arguments.Add(Constants.DB_PATH, Config.DefaultDbPath);
             }
 
             // This is a simple topological sort.

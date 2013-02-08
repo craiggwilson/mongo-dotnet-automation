@@ -17,17 +17,17 @@ namespace MongoDB.Automation.Configuration
         public LocalReplicaSetMongodConfigurationBuilder(ILocalProcessConfiguration configuration)
             : base(configuration.Arguments)
         {
-            BinPath(configuration.BinPath);
+            ExecutablePath(configuration.ExecutablePath);
         }
 
         public LocalReplicaSetMongodConfigurationBuilder OplogSize(int sizeInMegabytes)
         {
-            return Set("oplogSize", sizeInMegabytes.ToString());
+            return Set(Constants.OP_LOG_SIZE, sizeInMegabytes.ToString());
         }
 
         public LocalReplicaSetMongodConfigurationBuilder ReplSet(string replSet)
         {
-            return Set("replSet", replSet);
+            return Set(Constants.REPL_SET, replSet);
         }
     }
 }

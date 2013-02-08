@@ -9,6 +9,6 @@ namespace MongoDB.Automation.Configuration
     {
         IEnumerable<KeyValuePair<string, string>> Arguments { get; }
 
-        string BinPath { get; }
+        string ExecutablePath { get; }
     }
 }

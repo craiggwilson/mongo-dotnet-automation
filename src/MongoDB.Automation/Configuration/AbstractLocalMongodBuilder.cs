@@ -17,27 +17,22 @@ namespace MongoDB.Automation.Configuration
 
         public T DbPath(string dbPath)
         {
-            return Set("dbpath", dbPath);
-        }
-
-        public T Ipv6()
-        {
-            return Set("ipv6");
+            return Set(Constants.DB_PATH, dbPath);
         }
 
         public T NoJournal()
         {
-            return Set("nojournal");
+            return Set(Constants.NO_JOURNAL);
         }
 
         public T NoPrealloc()
         {
-            return Set("noprealloc");
+            return Set(Constants.NO_PREALLOC);
         }
 
         public T SmallFiles()
         {
-            return Set("smallfiles");
+            return Set(Constants.SMALL_FILES);
         }
     }
 }

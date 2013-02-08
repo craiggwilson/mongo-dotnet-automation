@@ -59,6 +59,7 @@
     <Compile Include="Configuration\AbstractLocalMongodBuilder.cs" />
     <Compile Include="Configuration\AbstractLocalConfigurationBuilder.cs" />
     <Compile Include="Configuration\ReplicaSetConfiguration.cs" />
+    <Compile Include="Constants.cs" />
     <Compile Include="DefaultControllerFactory.cs" />
     <Compile Include="DefaultProcessFactory.cs" />
     <Compile Include="Automate.cs" />

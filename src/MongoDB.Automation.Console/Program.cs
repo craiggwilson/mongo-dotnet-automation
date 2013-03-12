@@ -11,29 +11,33 @@ namespace MongoDB.Automation.Console
     {
         static void Main(string[] args)
         {
-            //args = new string[] { "--replSet", "rs0", "--dbpath", "c:\\data\\db\\{replSet}\\{port}", "--ports", "40000,40001,40002" };
+            args = new [] 
+            { 
+                "start", 
+                "--replSet", "testing", 
+                "--dbpath", @"c:\MongoDB\{replSet}\{port}",
+                "--ports", "40000,40001,40002" 
+            };
 
-            var result = GetArguments(args);
-
-            bool startClean = !result.ContainsKey("restart");
-            result.Remove("restart");
-
-            string binDir;
-            if (!result.TryGetValue("binDir", out binDir))
+            string verb = null;
+            if (args.Length > 0)
             {
-                var binDirs = GetBinDirectories();
-                string binVersion;
-                if (!result.TryGetValue("binVersion", out binVersion))
-                {
-                    binVersion = "default";
-                }
-
-                binDir = binDirs[binVersion];
+                verb = args[0];
+                args = args.Skip(1).ToArray();
             }
 
-            var controllerConfig = new ConfigurationFactory(binDir, result).GetConfiguration();
+            if (verb == null || verb.StartsWith("--"))
+            {
+                throw new InvalidOperationException("Must begin with a valid verb.");
+            }
 
-            new Automate().From(controllerConfig).Start(startClean ? StartOptions.Clean : StartOptions.None);
+            var result = GetArguments(args);
+            var binDir = GetBinDirectory(result);
+
+            if (verb == "start" || verb == "restart")
+            {
+                new StartCommand(verb, binDir, result).Run();
+            }
         }
 
         private static Dictionary<string, string> GetArguments(IEnumerable<string> args)
@@ -70,14 +74,35 @@ namespace MongoDB.Automation.Console
             return result;
         }
 
+        private static string GetBinDirectory(Dictionary<string, string> result)
+        {
+            string binDir;
+            if (!result.TryGetValue("binDir", out binDir))
+            {
+                var binDirs = GetBinDirectories();
+                string binVersion;
+                if (!result.TryGetValue("binVersion", out binVersion))
+                {
+                    binVersion = "default";
+                }
+
+                binDir = binDirs[binVersion];
+            }
+            else
+            {
+                result.Remove("binDir");
+            }
+            return binDir;
+        }
+
         private static Dictionary<string, string> GetBinDirectories()
         {
             Dictionary<string, string> result = new Dictionary<string, string>();
             foreach (var key in ConfigurationManager.AppSettings.AllKeys)
             {
-                if (key.StartsWith("mongodb."))
+                if (key.StartsWith("binaries."))
                 {
-                    result.Add(key.Substring(8), ConfigurationManager.AppSettings[key]);
+                    result.Add(key.Substring(9), ConfigurationManager.AppSettings[key]);
                 }
             }
 

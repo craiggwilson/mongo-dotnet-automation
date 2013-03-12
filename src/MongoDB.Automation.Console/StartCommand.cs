@@ -1,0 +1,74 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using MongoDB.Automation.Configuration;
+
+namespace MongoDB.Automation.Console
+{
+    public class StartCommand
+    {
+        private readonly Dictionary<string, string> _args;
+        private readonly string _binDirectory;
+        private readonly string _verb;
+
+        public StartCommand(string verb, string binDirectory, Dictionary<string, string> args)
+        {
+            _verb = verb;
+            _args = args;
+            _binDirectory = binDirectory;
+        }
+
+        public void Run()
+        {
+            IControllerConfiguration config;
+            if (_args.ContainsKey("replSet"))
+            {
+                config = GetReplicaSetConfiguration();
+            }
+            else
+            {
+                throw new NotSupportedException();
+            }
+
+            new Automate()
+                .From(config).Start(_verb == "restart" ? StartOptions.None : StartOptions.Clean);
+        }
+
+        private IReplicaSetConfiguration GetReplicaSetConfiguration()
+        {
+            var replicaSetName = _args["replSet"];
+            bool useArbiter = _args.ContainsKey("useArbiter");
+
+            int[] ports;
+            if (_args.ContainsKey("ports"))
+            {
+                ports = _args["ports"].Split(',').Select(x => int.Parse(x)).ToArray();
+            }
+            else
+            {
+                ports = new[] { 30000, 30001, 30002 };
+            }
+
+            _args.Remove("useArbiter");
+            _args.Remove("ports");
+
+            var memberConfig = new LocalMongodConfigurationBuilder(_args)
+                .ExecutablePath(Path.Combine(_binDirectory, "mongod.exe"))
+                .Build();
+
+            var replSetBuilder = new LocalReplicaSetConfigurationBuilder()
+                .ReplicaSetName(replicaSetName)
+                .Ports(ports, memberConfig);
+
+            if (useArbiter)
+            {
+                replSetBuilder = replSetBuilder.Arbiter(ports[ports.Length - 1], memberConfig);
+            }
+
+            return replSetBuilder.Build();
+        }
+    }
+}

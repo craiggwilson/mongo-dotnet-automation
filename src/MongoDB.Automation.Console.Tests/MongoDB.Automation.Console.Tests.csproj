@@ -54,9 +54,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CommandLine\FlagOptionGroupTests.cs" />
-    <Compile Include="CommandLine\ParserTests.cs" />
-    <Compile Include="CommandLine\UnorderedOptionGroupTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

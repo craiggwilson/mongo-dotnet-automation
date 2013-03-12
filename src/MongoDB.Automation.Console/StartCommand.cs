@@ -33,8 +33,16 @@ namespace MongoDB.Automation.Console
                 throw new NotSupportedException();
             }
 
-            new Automate()
-                .From(config).Start(_verb == "restart" ? StartOptions.None : StartOptions.Clean);
+            try
+            {
+                new Automate()
+                    .From(config).Start(_verb == "restart" ? StartOptions.None : StartOptions.Clean);
+            }
+            catch (AutomationException ex)
+            {
+                System.Console.WriteLine("Unable to {0} using the supplied parameters.", _verb);
+                System.Console.WriteLine(ex.Message);
+            }
         }
 
         private IReplicaSetConfiguration GetReplicaSetConfiguration()

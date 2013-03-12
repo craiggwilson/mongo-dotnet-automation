@@ -13,7 +13,7 @@ namespace MongoDB.Automation.Console
         {
             args = new [] 
             { 
-                "start", 
+                "restart", 
                 "--replSet", "testing", 
                 "--dbpath", @"c:\MongoDB\{replSet}\{port}",
                 "--ports", "40000,40001,40002" 

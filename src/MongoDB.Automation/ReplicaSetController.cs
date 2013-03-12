@@ -124,7 +124,7 @@ namespace MongoDB.Automation
             Config.Out.WriteLine("Starting replica set.");
             _members.ForEach(m => m.Start(options));
 
-            if (!_isReplicaSetInitiated)
+            if (options == StartOptions.Clean)
             {
                 Config.Out.WriteLine("Initiating replica set.");
                 _isReplicaSetInitiated = true;

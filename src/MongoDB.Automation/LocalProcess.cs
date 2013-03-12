@@ -83,6 +83,7 @@ namespace MongoDB.Automation
 
             Config.Out.WriteLine("Starting {0} {1}.", _process.StartInfo.FileName, _process.StartInfo.Arguments);
 
+
             EnsureDbPath(options);
             RemoveLogPath(options);
             

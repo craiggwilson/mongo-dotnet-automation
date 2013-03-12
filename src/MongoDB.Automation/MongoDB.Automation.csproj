@@ -51,7 +51,7 @@
     <Compile Include="AutomationException.cs" />
     <Compile Include="Configuration\IControllerConfiguration.cs" />
     <Compile Include="Configuration\IProcessConfiguration.cs" />
-    <Compile Include="Configuration\IInstanceProcessControllerConfigurationPersister.cs" />
+    <Compile Include="Configuration\IControllerConfigurationPersister.cs" />
     <Compile Include="Configuration\IReplicaSetConfiguration.cs" />
     <Compile Include="Configuration\ILocalProcessConfiguration.cs" />
     <Compile Include="Configuration\LocalProcessConfiguration.cs" />
@@ -59,6 +59,7 @@
     <Compile Include="Configuration\AbstractLocalMongodBuilder.cs" />
     <Compile Include="Configuration\AbstractLocalConfigurationBuilder.cs" />
     <Compile Include="Configuration\ReplicaSetConfiguration.cs" />
+    <Compile Include="Configuration\XmlConfigurationPersister.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="DefaultControllerFactory.cs" />
     <Compile Include="DefaultProcessFactory.cs" />

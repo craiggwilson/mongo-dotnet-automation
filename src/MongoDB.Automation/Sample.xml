@@ -2,7 +2,7 @@
 <AutomationDefinition type="replicaSet">
   
   <members basePath="C:\MongoDB\data">
-    <member binPath="C:\MongoDB\slect">
+    <member>
       <dbpath>{basePath}\{replSet}\{port}</dbpath>
     </member>
   </members>

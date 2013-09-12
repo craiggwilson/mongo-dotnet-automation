@@ -30,13 +30,14 @@ namespace MongoDB.Automation.Console
             }
             else
             {
-                throw new NotSupportedException();
+                config = GetStandAloneConfiguration();
             }
 
             try
             {
                 new Automate()
-                    .From(config).Start(_verb == "restart" ? StartOptions.None : StartOptions.Clean);
+                    .From(config)
+                    .Start(_verb == "restart" ? StartOptions.None : StartOptions.Clean);
             }
             catch (AutomationException ex)
             {
@@ -45,7 +46,22 @@ namespace MongoDB.Automation.Console
             }
         }
 
-        private IReplicaSetConfiguration GetReplicaSetConfiguration()
+        private StandAloneConfiguration GetStandAloneConfiguration()
+        {
+            int port = 27017;
+            if (_args.ContainsKey("port"))
+            {
+                port = int.Parse(_args["port"]);
+            }
+
+            var serverConfig = new LocalMongodConfigurationBuilder(_args)
+                .ExecutablePath(Path.Combine(_binDirectory, "mongod.exe"))
+                .Build();
+
+            return new StandAloneConfiguration(serverConfig);
+        }
+
+        private ReplicaSetConfiguration GetReplicaSetConfiguration()
         {
             var replicaSetName = _args["replSet"];
             bool useArbiter = _args.ContainsKey("useArbiter");
@@ -57,7 +73,7 @@ namespace MongoDB.Automation.Console
             }
             else
             {
-                ports = new[] { 30000, 30001, 30002 };
+                ports = new[] { 27017, 27018, 27019};
             }
 
             _args.Remove("useArbiter");

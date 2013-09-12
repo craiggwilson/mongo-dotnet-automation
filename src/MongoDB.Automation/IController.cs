@@ -10,12 +10,6 @@ namespace MongoDB.Automation
     public interface IController
     {
         /// <summary>
-        /// Gets the configuration.
-        /// </summary>
-        /// <returns>The configuration for the controller.</returns>
-        IControllerConfiguration GetConfiguration();
-
-        /// <summary>
         /// Starts all the instances.
         /// </summary>
         /// <param name="options">The options.</param>

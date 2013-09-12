@@ -5,7 +5,7 @@ using System.Text;
 
 namespace MongoDB.Automation.Configuration
 {
-    public class LocalProcessConfiguration : ILocalProcessConfiguration
+    public class LocalProcessConfiguration : IProcessConfiguration
     {
         private readonly string _executablePath;
         private readonly IEnumerable<KeyValuePair<string, string>> _arguments;

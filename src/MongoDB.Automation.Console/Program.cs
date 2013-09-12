@@ -11,13 +11,12 @@ namespace MongoDB.Automation.Console
     {
         static void Main(string[] args)
         {
-            args = new [] 
-            { 
-                "restart", 
-                "--replSet", "testing", 
-                "--dbpath", @"c:\MongoDB\{replSet}\{port}",
-                "--ports", "40000,40001,40002" 
-            };
+            if (args == null || args.Length == 0)
+            {
+                // start a stand alone server on the default port
+                // for testing
+                args = new[] { "start" };
+            }
 
             string verb = null;
             if (args.Length > 0)

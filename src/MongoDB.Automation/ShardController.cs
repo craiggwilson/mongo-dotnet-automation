@@ -18,7 +18,7 @@ namespace MongoDB.Automation
         private readonly List<IProcess> _routers;
         private bool _isInitiated;
 
-        public ShardController(IEnumerable<IShardablesController> shards, IEnumerable<IProcess> configServers, IEnumerable<IProcess> routers)
+        public ShardController(IEnumerable<IShardableController> shards, IEnumerable<IProcess> configServers, IEnumerable<IProcess> routers)
         {
             _shards = shards.Select((x, i) => new Shard(string.Format("shard_{0}", i), x)).ToList();
             _configServers = configServers.ToList();
@@ -69,10 +69,10 @@ namespace MongoDB.Automation
 
         private class Shard
         {
-            private readonly IShardablesController _controller;
+            private readonly IShardableController _controller;
             private readonly string _name;
 
-            public Shard(string name, IShardablesController controller)
+            public Shard(string name, IShardableController controller)
             {
                 _name = name;
                 _controller = controller;

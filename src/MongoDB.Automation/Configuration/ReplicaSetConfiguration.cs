@@ -5,7 +5,7 @@ using System.Text;
 
 namespace MongoDB.Automation.Configuration
 {
-    public class ReplicaSetConfiguration : IReplicaSetConfiguration
+    public class ReplicaSetConfiguration : IControllerConfiguration
     {
         private readonly string _replicaSetName;
         private readonly IEnumerable<IProcessConfiguration> _members;

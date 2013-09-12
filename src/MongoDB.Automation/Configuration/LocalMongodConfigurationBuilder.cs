@@ -14,7 +14,7 @@ namespace MongoDB.Automation.Configuration
             : base(arguments)
         { }
 
-        public LocalMongodConfigurationBuilder(ILocalProcessConfiguration configuration)
+        public LocalMongodConfigurationBuilder(LocalProcessConfiguration configuration)
             : base(configuration.Arguments)
         {
             ExecutablePath(configuration.ExecutablePath);

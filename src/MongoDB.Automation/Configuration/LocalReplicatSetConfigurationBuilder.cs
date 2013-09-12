@@ -9,14 +9,14 @@ namespace MongoDB.Automation.Configuration
     {
         private int? _arbiterPort;
         private string _setName;
-        private Dictionary<int, ILocalProcessConfiguration> _templates;
+        private Dictionary<int, LocalProcessConfiguration> _templates;
 
         public LocalReplicaSetConfigurationBuilder()
         {
-            _templates = new Dictionary<int, ILocalProcessConfiguration>();
+            _templates = new Dictionary<int, LocalProcessConfiguration>();
         }
 
-        public IReplicaSetConfiguration Build()
+        public ReplicaSetConfiguration Build()
         {
             if (string.IsNullOrEmpty(_setName))
             {
@@ -33,28 +33,28 @@ namespace MongoDB.Automation.Configuration
             return new ReplicaSetConfiguration(_setName, processes, _arbiterPort);
         }
 
-        public LocalReplicaSetConfigurationBuilder Arbiter(int port, ILocalProcessConfiguration configuration)
+        public LocalReplicaSetConfigurationBuilder Arbiter(int port, LocalProcessConfiguration configuration)
         {
             _arbiterPort = port;
             return Port(port, configuration);
         }
 
-        public LocalReplicaSetConfigurationBuilder Port(int port, ILocalProcessConfiguration configuration)
+        public LocalReplicaSetConfigurationBuilder Port(int port, LocalProcessConfiguration configuration)
         {
             return Ports(new [] { port }, configuration);
         }
 
-        public LocalReplicaSetConfigurationBuilder Port(int port1, int port2, ILocalProcessConfiguration configuration)
+        public LocalReplicaSetConfigurationBuilder Port(int port1, int port2, LocalProcessConfiguration configuration)
         {
             return Ports(new [] { port1, port2 }, configuration);
         }
 
-        public LocalReplicaSetConfigurationBuilder Port(int port1, int port2, int port3, ILocalProcessConfiguration configuration)
+        public LocalReplicaSetConfigurationBuilder Port(int port1, int port2, int port3, LocalProcessConfiguration configuration)
         {
             return Ports(new [] { port1, port2, port3 }, configuration);
         }
 
-        public LocalReplicaSetConfigurationBuilder Ports(IEnumerable<int> ports, ILocalProcessConfiguration configuration)
+        public LocalReplicaSetConfigurationBuilder Ports(IEnumerable<int> ports, LocalProcessConfiguration configuration)
         {
             foreach (var port in ports)
             {

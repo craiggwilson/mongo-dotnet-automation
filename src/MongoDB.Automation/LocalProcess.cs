@@ -17,6 +17,7 @@ namespace MongoDB.Automation
         private readonly Dictionary<string, string> _arguments;
         private readonly string _dbPath;
         private readonly string _logPath;
+        private readonly string _pidfile;
         private readonly Process _process;
         private bool _processIsSupposedToBeRunning;
 
@@ -40,18 +41,38 @@ namespace MongoDB.Automation
             bool useSysLog = resolved.ContainsKey(Constants.SYS_LOG);
 
             _address = new MongoServerAddress("localhost", int.Parse(resolved[Constants.PORT]));
-            _process = new Process
+
+            _pidfile = Path.Combine(_dbPath, ".pid");
+            int pid;
+            if (File.Exists(_pidfile) && int.TryParse(File.ReadAllText(_pidfile), out pid))
             {
-                StartInfo = new ProcessStartInfo
+                try
                 {
-                    FileName = executablePath,
-                    Arguments = GetCommandArguments(resolved),
-                    CreateNoWindow = !string.IsNullOrEmpty(_logPath) || useSysLog,
-                    WindowStyle = string.IsNullOrEmpty(_logPath) && !useSysLog 
-                        ? ProcessWindowStyle.Normal
-                        : ProcessWindowStyle.Hidden
+                    _process = Process.GetProcessById(pid);
+                    _processIsSupposedToBeRunning = true;
                 }
-            };
+                catch (ArgumentException)
+                {
+                    // this is thrown when a .pid file was left in the directory, but the process is no longer running.  
+                    // in this case, we just want to ignore the problem and move on.
+                }
+            }
+
+            if(_process == null)
+            {
+                _process = new Process
+                    {
+                        StartInfo = new ProcessStartInfo
+                        {
+                            FileName = executablePath,
+                            Arguments = GetCommandArguments(resolved),
+                            CreateNoWindow = !string.IsNullOrEmpty(_logPath) || useSysLog,
+                            WindowStyle = string.IsNullOrEmpty(_logPath) && !useSysLog
+                                ? ProcessWindowStyle.Normal
+                                : ProcessWindowStyle.Hidden
+                        }
+                    };
+            }
         }
 
         public override MongoServerAddress Address
@@ -78,11 +99,11 @@ namespace MongoDB.Automation
         {
             if (IsRunning)
             {
+                Config.Out.WriteLine("{0} at {1} is already running.", _process.StartInfo.FileName, _dbPath);
                 return;
             }
 
             Config.Out.WriteLine("Starting {0} {1}.", _process.StartInfo.FileName, _process.StartInfo.Arguments);
-
 
             EnsureDbPath(options);
             RemoveLogPath(options);
@@ -98,6 +119,8 @@ namespace MongoDB.Automation
                     _ => IsRunning,
                     TimeSpan.FromSeconds(20),
                     TimeSpan.FromSeconds(2));
+
+                WritePidfile();
             }
             catch(Exception ex)
             {
@@ -131,6 +154,7 @@ namespace MongoDB.Automation
                 {
                     try
                     {
+                        File.Delete(_pidfile);
                         _process.Kill();
                     }
                     catch { }
@@ -177,6 +201,11 @@ namespace MongoDB.Automation
                     File.Delete(_logPath);
                 }
             }
+        }
+
+        private void WritePidfile()
+        {
+            File.WriteAllText(_pidfile, _process.Id.ToString());
         }
 
         private static Dictionary<string, string> ResolveCommandArguments(Dictionary<string,string> arguments)

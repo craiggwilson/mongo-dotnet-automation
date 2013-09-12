@@ -11,7 +11,7 @@ using MongoDB.Automation.Configuration;
 
 namespace MongoDB.Automation
 {
-    public class ReplicaSetController : IShardablesController
+    public class ReplicaSetController : IShardableController
     {
         private static readonly TimeSpan _defaultRetryTimeout = TimeSpan.FromMinutes(1);
         private static readonly TimeSpan _defaultRetryDelay = TimeSpan.FromSeconds(5);

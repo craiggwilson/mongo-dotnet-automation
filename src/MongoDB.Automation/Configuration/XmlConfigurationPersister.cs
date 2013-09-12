@@ -14,6 +14,9 @@ namespace MongoDB.Automation.Configuration
             throw new NotImplementedException();
         }
 
-        
+        public void Save(IControllerConfiguration configuration, Stream stream)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

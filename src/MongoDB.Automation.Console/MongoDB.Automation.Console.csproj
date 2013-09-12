@@ -8,7 +8,7 @@
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>MongoDB.Automation.Console</RootNamespace>
-    <AssemblyName>mongoa</AssemblyName>
+    <AssemblyName>mdb</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -47,7 +47,6 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StartCommand.cs" />
-    <Compile Include="WriteLine.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

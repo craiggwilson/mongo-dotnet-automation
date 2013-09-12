@@ -22,15 +22,24 @@ namespace MongoDB.Automation
 
         public IController Create(IControllerConfiguration configuration)
         {
-            if (configuration is IReplicaSetConfiguration)
+            if (configuration is StandAloneConfiguration)
             {
-                return Create((IReplicaSetConfiguration)configuration);
+                return Create((StandAloneConfiguration)configuration);
+            }
+            if (configuration is ReplicaSetConfiguration)
+            {
+                return Create((ReplicaSetConfiguration)configuration);
             }
 
             throw new NotSupportedException();
         }
 
-        private IController Create(IReplicaSetConfiguration configuration)
+        private IController Create(StandAloneConfiguration configuration)
+        {
+            return new StandAloneController(_processFactory.Create(configuration.Server));
+        }
+
+        private IController Create(ReplicaSetConfiguration configuration)
         {
             var processes = configuration.Members.Select(x => _processFactory.Create(x));
             return new ReplicaSetController(configuration.ReplicaSetName, processes, configuration.ArbiterPort);

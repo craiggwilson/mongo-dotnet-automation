@@ -10,15 +10,15 @@ namespace MongoDB.Automation
     {
         public virtual IProcess Create(IProcessConfiguration configuration)
         {
-            if (configuration is ILocalProcessConfiguration)
+            if (configuration is LocalProcessConfiguration)
             {
-                return Create((ILocalProcessConfiguration)configuration);
+                return Create((LocalProcessConfiguration)configuration);
             }
 
             throw new NotSupportedException("Unknown configuration type.");
         }
 
-        private IProcess Create(ILocalProcessConfiguration configuration)
+        private IProcess Create(LocalProcessConfiguration configuration)
         {
             return new LocalProcess(configuration.ExecutablePath, configuration.Arguments);
         }

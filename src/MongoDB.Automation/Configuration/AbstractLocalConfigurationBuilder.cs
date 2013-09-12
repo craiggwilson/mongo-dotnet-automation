@@ -33,7 +33,7 @@ namespace MongoDB.Automation.Configuration
             return Set(Constants.BIND_IP, ip.ToString());
         }
 
-        public ILocalProcessConfiguration Build()
+        public LocalProcessConfiguration Build()
         {
             if (_executablePath == null)
             {

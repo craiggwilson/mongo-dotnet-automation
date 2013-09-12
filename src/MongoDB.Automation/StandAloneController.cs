@@ -8,7 +8,7 @@ using MongoDB.Automation.Configuration;
 
 namespace MongoDB.Automation
 {
-    public class StandAloneController : IShardablesController
+    public class StandAloneController : IShardableController
     {
         private readonly IProcess _process;
 
@@ -34,7 +34,7 @@ namespace MongoDB.Automation
 
         public IControllerConfiguration GetConfiguration()
         {
-            throw new NotImplementedException();
+            return new StandAloneConfiguration(_process.GetConfiguration());
         }
 
         public string GetAddShardAddress()

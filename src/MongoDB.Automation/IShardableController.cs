@@ -5,10 +5,10 @@ using System.Text;
 
 namespace MongoDB.Automation
 {
-    public interface IShardablesController : IController
+    public interface IShardableController : IController
     {
         /// <summary>
-        /// Gets the address used to add the process controller to a shard.
+        /// Gets the address used to add the controller to a shard.
         /// </summary>
         string GetAddShardAddress();
     }

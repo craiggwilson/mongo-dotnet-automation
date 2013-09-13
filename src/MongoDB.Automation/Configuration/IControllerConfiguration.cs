@@ -7,5 +7,6 @@ namespace MongoDB.Automation.Configuration
 {
     public interface IControllerConfiguration
     {
+        void Validate();
     }
 }

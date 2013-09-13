@@ -36,13 +36,12 @@ namespace MongoDB.Automation
 
         private IController Create(StandAloneConfiguration configuration)
         {
-            return new StandAloneController(_processFactory.Create(configuration.Server));
+            return new StandAloneController(configuration, _processFactory);
         }
 
         private IController Create(ReplicaSetConfiguration configuration)
         {
-            var processes = configuration.Members.Select(x => _processFactory.Create(x));
-            return new ReplicaSetController(configuration.ReplicaSetName, processes, configuration.ArbiterPort);
+            return new ReplicaSetController(configuration, _processFactory);
         }
     }
 }

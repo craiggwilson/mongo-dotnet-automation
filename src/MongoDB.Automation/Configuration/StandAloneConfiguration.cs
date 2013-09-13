@@ -7,16 +7,22 @@ namespace MongoDB.Automation.Configuration
 {
     public class StandAloneConfiguration : IControllerConfiguration
     {
-        private readonly IProcessConfiguration _server;
-
-        public StandAloneConfiguration(IProcessConfiguration server)
-        {
-            _server = server;
-        }
+        private IProcessConfiguration _server;
 
         public IProcessConfiguration Server
         {
             get { return _server; }
+            set { _server = value; }
+        }
+
+        public void Validate()
+        {
+            if (_server == null)
+            {
+                throw new ArgumentNullException("Server");
+            }
+
+            _server.Validate();
         }
     }
 }

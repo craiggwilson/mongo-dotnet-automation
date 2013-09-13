@@ -7,34 +7,38 @@ namespace MongoDB.Automation.Configuration
 {
     public class ReplicaSetConfiguration : IControllerConfiguration
     {
-        private readonly string _replicaSetName;
-        private readonly IEnumerable<IProcessConfiguration> _members;
-        private readonly int? _arbiterPort;
-
-        public ReplicaSetConfiguration(string replicaSetName, IEnumerable<IProcessConfiguration> members)
-            : this(replicaSetName, members, null)
-        { }
-
-        public ReplicaSetConfiguration(string replicaSet, IEnumerable<IProcessConfiguration> members, int? arbiterPort)
-        {
-            _replicaSetName = replicaSet;
-            _members = members.ToList();
-            _arbiterPort = arbiterPort;
-        }
+        private string _replicaSetName;
+        private IEnumerable<IProcessConfiguration> _members;
+        private int? _arbiterPort;
 
         public string ReplicaSetName
         {
             get { return _replicaSetName; }
+            set { _replicaSetName = value; }
         }
 
         public IEnumerable<IProcessConfiguration> Members
         {
             get { return _members; }
+            set { _members = value; }
         }
 
         public int? ArbiterPort
         {
             get { return _arbiterPort; }
+            set { _arbiterPort = value; }
+        }
+
+        public void Validate()
+        {
+            if (string.IsNullOrEmpty(_replicaSetName))
+            {
+                throw new ArgumentException("Cannot be null or empty.", "replicaSetName");
+            }
+            if (_members == null || !_members.Any())
+            {
+                throw new ArgumentException("Cannot be null or empty.", "processes");
+            }
         }
     }
 }

@@ -7,27 +7,36 @@ namespace MongoDB.Automation.Configuration
 {
     public class LocalProcessConfiguration : IProcessConfiguration
     {
-        private readonly string _executablePath;
-        private readonly IEnumerable<KeyValuePair<string, string>> _arguments;
+        private string _executablePath;
+        private IEnumerable<KeyValuePair<string, string>> _arguments;
 
-        public LocalProcessConfiguration(string executablePath)
-            : this(executablePath, new Dictionary<string,string>())
-        { }
-
-        public LocalProcessConfiguration(string executablePath, IEnumerable<KeyValuePair<string, string>> arguments)
+        public LocalProcessConfiguration()
         {
-            _executablePath = executablePath;
-            _arguments = arguments ?? new Dictionary<string, string>();
+            _arguments = new Dictionary<string, string>();
         }
 
         public IEnumerable<KeyValuePair<string, string>> Arguments
         {
             get { return _arguments; }
+            set { _arguments = value; }
         }
 
         public string ExecutablePath
         {
             get { return _executablePath; }
+            set { _executablePath = value; }
+        }
+
+        public void Validate()
+        {
+            if (_executablePath == null)
+            {
+                throw new ArgumentNullException("ExecutablePath");
+            }
+            if (_arguments == null)
+            {
+                throw new ArgumentNullException("Arguments");
+            }
         }
     }
 }

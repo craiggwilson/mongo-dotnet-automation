@@ -17,21 +17,24 @@ namespace MongoDB.Automation
         private readonly Dictionary<string, string> _arguments;
         private readonly string _dbPath;
         private readonly string _logPath;
-        private readonly string _pidfile;
         private readonly Process _process;
         private bool _processIsSupposedToBeRunning;
 
-        public LocalProcess(string executablePath, IEnumerable<KeyValuePair<string,string>> arguments)
+        public LocalProcess(LocalProcessConfiguration configuration, Process process = null)
         {
-            if (string.IsNullOrEmpty(executablePath))
+            if (configuration == null)
+            {
+                throw new ArgumentNullException("configuration");
+            }
+            if (string.IsNullOrEmpty(configuration.ExecutablePath))
             {
                 throw new ArgumentException("Cannot be null or empty.", "executablePath");
             }
 
             // store arguments before we resolve dependencies so configuration is transportable.
-            _arguments = arguments == null 
-                ? new Dictionary<string,string>()
-                : arguments.ToDictionary(x => x.Key, x => x.Value);
+            _arguments = configuration.Arguments == null
+                ? new Dictionary<string, string>()
+                : configuration.Arguments.ToDictionary(x => x.Key, x => x.Value);
 
             var resolved = ResolveCommandArguments(_arguments);
 
@@ -42,36 +45,21 @@ namespace MongoDB.Automation
 
             _address = new MongoServerAddress("localhost", int.Parse(resolved[Constants.PORT]));
 
-            _pidfile = Path.Combine(_dbPath, ".pid");
-            int pid;
-            if (File.Exists(_pidfile) && int.TryParse(File.ReadAllText(_pidfile), out pid))
-            {
-                try
-                {
-                    _process = Process.GetProcessById(pid);
-                    _processIsSupposedToBeRunning = true;
-                }
-                catch (ArgumentException)
-                {
-                    // this is thrown when a .pid file was left in the directory, but the process is no longer running.  
-                    // in this case, we just want to ignore the problem and move on.
-                }
-            }
-
-            if(_process == null)
+            _process = process;
+            if (_process == null)
             {
                 _process = new Process
+                {
+                    StartInfo = new ProcessStartInfo
                     {
-                        StartInfo = new ProcessStartInfo
-                        {
-                            FileName = executablePath,
-                            Arguments = GetCommandArguments(resolved),
-                            CreateNoWindow = !string.IsNullOrEmpty(_logPath) || useSysLog,
-                            WindowStyle = string.IsNullOrEmpty(_logPath) && !useSysLog
-                                ? ProcessWindowStyle.Normal
-                                : ProcessWindowStyle.Hidden
-                        }
-                    };
+                        FileName = configuration.ExecutablePath,
+                        Arguments = GetCommandArguments(resolved),
+                        CreateNoWindow = !string.IsNullOrEmpty(_logPath) || useSysLog,
+                        WindowStyle = string.IsNullOrEmpty(_logPath) && !useSysLog
+                            ? ProcessWindowStyle.Normal
+                            : ProcessWindowStyle.Hidden
+                    }
+                };
             }
         }
 
@@ -92,7 +80,11 @@ namespace MongoDB.Automation
 
         public override IProcessConfiguration GetConfiguration()
         {
-            return new LocalProcessConfiguration(_process.StartInfo.FileName, _arguments);
+            return new LocalProcessConfiguration
+            {
+                ExecutablePath = _process.StartInfo.FileName,
+                Arguments = _arguments
+            };
         }
 
         public override void Start(StartOptions options)
@@ -107,22 +99,20 @@ namespace MongoDB.Automation
 
             EnsureDbPath(options);
             RemoveLogPath(options);
-            
+
             _processIsSupposedToBeRunning = true;
 
             try
             {
                 _process.Start();
                 // let's make sure we waited long enough for the process to die...
-                Thread.Sleep(TimeSpan.FromSeconds(2)); 
+                Thread.Sleep(TimeSpan.FromSeconds(2));
                 Retry.WithTimeout(
                     _ => IsRunning,
                     TimeSpan.FromSeconds(20),
                     TimeSpan.FromSeconds(2));
-
-                WritePidfile();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 var sb = new StringBuilder();
                 sb.AppendFormat("Unable to start instance for address {0}.", Address).AppendLine();
@@ -154,7 +144,6 @@ namespace MongoDB.Automation
                 {
                     try
                     {
-                        File.Delete(_pidfile);
                         _process.Kill();
                     }
                     catch { }
@@ -203,12 +192,7 @@ namespace MongoDB.Automation
             }
         }
 
-        private void WritePidfile()
-        {
-            File.WriteAllText(_pidfile, _process.Id.ToString());
-        }
-
-        private static Dictionary<string, string> ResolveCommandArguments(Dictionary<string,string> arguments)
+        private static Dictionary<string, string> ResolveCommandArguments(Dictionary<string, string> arguments)
         {
             if (!arguments.ContainsKey(Constants.PORT))
             {
@@ -224,7 +208,7 @@ namespace MongoDB.Automation
             var remaining = arguments.Select(x => new CommandLineArgument(x.Key, x.Value)).ToList();
             var result = new Dictionary<string, string>();
             var set = new Queue<CommandLineArgument>(remaining.Where(x => x.Dependencies.Count == 0));
-            
+
             remaining = remaining.Where(x => x.Dependencies.Count > 0).ToList();
             if (set.Count == 0)
             {
@@ -257,7 +241,7 @@ namespace MongoDB.Automation
             return result;
         }
 
-        private static string GetCommandArguments(IEnumerable<KeyValuePair<string,string>> arguments)
+        private static string GetCommandArguments(IEnumerable<KeyValuePair<string, string>> arguments)
         {
             List<string> args = new List<string>();
             foreach (var arg in arguments)

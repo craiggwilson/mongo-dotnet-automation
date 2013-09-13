@@ -14,29 +14,21 @@ namespace MongoDB.Automation
     public class ReplicaSetControllerTests
     {
         [Test]
-        public void Constructor_should_throw_if_replicaSetName_is_null_or_empty()
+        public void Constructor_should_throw_if_configuration_is_null()
         {
-            var process = Substitute.For<IProcess>();
+            var processFactory = Substitute.For<IProcessFactory>();
 
-            Action ctor = () => new ReplicaSetController("", new[] { process });
+            Action ctor = () => new ReplicaSetController(null, processFactory);
 
-            ctor.ShouldThrow<ArgumentException>();
+            ctor.ShouldThrow<ArgumentNullException>();
         }
 
         [Test]
-        public void Constructor_should_throw_if_processes_is_null()
+        public void Constructor_should_throw_if_processFactory_is_null()
         {
-            Action ctor = () => new ReplicaSetController(TestConfiguration.GetMongodPath(), null);
+            Action ctor = () => new ReplicaSetController(new ReplicaSetConfiguration(), null);
 
-            ctor.ShouldThrow<ArgumentException>();
-        }
-
-        [Test]
-        public void Constructor_should_throw_if_processes_is_empty()
-        {
-            Action ctor = () => new ReplicaSetController(TestConfiguration.GetMongodPath(), Enumerable.Empty<IProcess>());
-
-            ctor.ShouldThrow<ArgumentException>();
+            ctor.ShouldThrow<ArgumentNullException>();
         }
 
         [Test]
@@ -103,11 +95,9 @@ namespace MongoDB.Automation
                 .Port(30000, 30001, 30002, memberConfiguration)
                 .Build();
 
-            var fact = new DefaultProcessFactory();
+            var processFactory = new DefaultProcessFactory();
 
-            return new ReplicaSetController(replicaSetConfiguration.ReplicaSetName,
-                replicaSetConfiguration.Members.Select(m => fact.Create(m)),
-                replicaSetConfiguration.ArbiterPort);
+            return new ReplicaSetController(replicaSetConfiguration, processFactory);
         }
     }
 }

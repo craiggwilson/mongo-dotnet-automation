@@ -40,7 +40,11 @@ namespace MongoDB.Automation.Configuration
                 throw new AutomationException("Must provide an executable path.");
             }
 
-            return new LocalProcessConfiguration(_executablePath, _arguments);
+            return new LocalProcessConfiguration
+            {
+                ExecutablePath = _executablePath,
+                Arguments = _arguments
+            };
         }
 
         public T Config(string configPath)

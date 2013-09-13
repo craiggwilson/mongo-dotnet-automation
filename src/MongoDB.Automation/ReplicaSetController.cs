@@ -18,29 +18,32 @@ namespace MongoDB.Automation
 
         private readonly List<ReplicaSetMember> _members;
         private BsonDocument _config;
-        private bool _isReplicaSetInitiated;
         private int? _arbiterPort;
         private string _replicaSetName;
 
-        public ReplicaSetController(string replicaSetName, IEnumerable<IProcess> processes)
-            : this(replicaSetName, processes, null)
-        { }
-
-        public ReplicaSetController(string replicaSetName, IEnumerable<IProcess> processes, int? arbiterPort)
+        public ReplicaSetController(ReplicaSetConfiguration configuration, IProcessFactory processFactory)
         {
-            if (string.IsNullOrEmpty(replicaSetName))
+            if (configuration == null)
+            {
+                throw new ArgumentNullException("configuration");
+            }
+            if (processFactory == null)
+            {
+                throw new ArgumentNullException("processFactory");
+            }
+            if (string.IsNullOrEmpty(configuration.ReplicaSetName))
             {
                 throw new ArgumentException("Cannot be null or empty.", "replicaSetName");
             }
-            if (processes == null || !processes.Any())
+            if (configuration.Members == null || !configuration.Members.Any())
             {
                 throw new ArgumentException("Cannot be null or empty.", "processes");
             }
 
-            _replicaSetName = replicaSetName;
+            _replicaSetName = configuration.ReplicaSetName;
             _members = new List<ReplicaSetMember>();
-            _isReplicaSetInitiated = false;
-            _arbiterPort = arbiterPort;
+            _arbiterPort = configuration.ArbiterPort;
+            var processes = configuration.Members.Select(x => processFactory.Create(x));
 
             if(_arbiterPort.HasValue && !processes.Any(x => x.Address.Port == _arbiterPort.Value))
             {
@@ -105,8 +108,12 @@ namespace MongoDB.Automation
 
         public IControllerConfiguration GetConfiguration()
         {
-            var members = _members.Select(x => x.Process.GetConfiguration()).OfType<IProcessConfiguration>();
-            return new ReplicaSetConfiguration(_replicaSetName, members, _arbiterPort);
+            return new ReplicaSetConfiguration
+            {
+                ReplicaSetName = _replicaSetName,
+                Members = _members.Select(x => x.Process.GetConfiguration()).OfType<IProcessConfiguration>(),
+                ArbiterPort = _arbiterPort
+            };
         }
 
         public void MakePrimary(MongoServerAddress address)
@@ -127,7 +134,6 @@ namespace MongoDB.Automation
             if (options == StartOptions.Clean)
             {
                 Config.Out.WriteLine("Initiating replica set.");
-                _isReplicaSetInitiated = true;
                 var replSetInitiate = new CommandDocument("replSetInitiate", _config);
                 _members[0].RunReplicaSetInitiate(_config);
                 Config.Out.WriteLine("Replica set initiated.");

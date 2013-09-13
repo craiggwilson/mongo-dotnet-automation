@@ -20,7 +20,7 @@ namespace MongoDB.Automation
 
         private IProcess Create(LocalProcessConfiguration configuration)
         {
-            return new LocalProcess(configuration.ExecutablePath, configuration.Arguments);
+            return new LocalProcess(configuration);
         }
     }
 }

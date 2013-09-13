@@ -30,7 +30,12 @@ namespace MongoDB.Automation.Configuration
                     .Build())
                 .OfType<IProcessConfiguration>();
 
-            return new ReplicaSetConfiguration(_setName, processes, _arbiterPort);
+            return new ReplicaSetConfiguration
+            {
+                ReplicaSetName = _setName,
+                Members = processes,
+                ArbiterPort = _arbiterPort
+            };
         }
 
         public LocalReplicaSetConfigurationBuilder Arbiter(int port, LocalProcessConfiguration configuration)

@@ -18,7 +18,7 @@ namespace MongoDB.Automation
         public void Constructor_should_throw_an_exception_when_executable_is_null_or_empty()
         {
             var dict = new Dictionary<string, string>();
-            Action ctor = () => new LocalProcess("", dict);
+            Action ctor = () => new LocalProcess(null);
             ctor.ShouldThrow<ArgumentException>();
         }
 
@@ -31,7 +31,7 @@ namespace MongoDB.Automation
                 .Set("fake2", "{fake1}")
                 .Build();
 
-            Action build = () => new LocalProcess(config.ExecutablePath, config.Arguments);
+            Action build = () => new LocalProcess(config);
             build.ShouldThrow<AutomationException>();
         }
 
@@ -45,7 +45,7 @@ namespace MongoDB.Automation
                 .Set("dep3", "{dep1}")
                 .Build();
 
-            Action build = () => new LocalProcess(config.ExecutablePath, config.Arguments);
+            Action build = () => new LocalProcess(config);
             build.ShouldThrow<AutomationException>();
         }
 
@@ -60,7 +60,7 @@ namespace MongoDB.Automation
                 .Set("nodep", "yeah")
                 .Build();
 
-            Action build = () => new LocalProcess(config.ExecutablePath, config.Arguments);
+            Action build = () => new LocalProcess(config);
             build.ShouldThrow<AutomationException>();
         }
 
@@ -74,7 +74,7 @@ namespace MongoDB.Automation
                 .Set("nodep", "yeah")
                 .Build();
 
-            var subject = new LocalProcess(config.ExecutablePath, config.Arguments);
+            var subject = new LocalProcess(config);
             var arguments = subject.Arguments;
 
             arguments.Should().Contain("--dep1 c:\\yeah\\exists\\27017");
@@ -85,16 +85,22 @@ namespace MongoDB.Automation
         [Test]
         public void Running_should_be_false_after_construction()
         {
-            var config = new LocalProcessConfiguration(TestConfiguration.GetMongodPath(), null);
-            var subject = new LocalProcess(config.ExecutablePath, config.Arguments);
+            var config = new LocalProcessConfiguration
+            {
+                ExecutablePath = TestConfiguration.GetMongodPath()
+            };
+            var subject = new LocalProcess(config);
             subject.IsRunning.Should().BeFalse();
         }
 
         [Test]
         public void Address_should_have_a_default_of_localhost_on_port_27017()
         {
-            var config = new LocalProcessConfiguration(TestConfiguration.GetMongodPath(), null);
-            var subject = new LocalProcess(config.ExecutablePath, config.Arguments);
+            var config = new LocalProcessConfiguration
+            {
+                ExecutablePath = TestConfiguration.GetMongodPath()
+            };
+            var subject = new LocalProcess(config);
             subject.Address.ShouldBeEquivalentTo(new MongoServerAddress("localhost", 27017));
         }
 
@@ -102,8 +108,11 @@ namespace MongoDB.Automation
         [KillMongoProcesses]
         public void Start_should_create_data_directory()
         {
-            var config = new LocalProcessConfiguration(TestConfiguration.GetMongodPath(), null);
-            var subject = new LocalProcess(config.ExecutablePath, config.Arguments);
+            var config = new LocalProcessConfiguration
+            {
+                ExecutablePath = TestConfiguration.GetMongodPath()
+            };
+            var subject = new LocalProcess(config);
             subject.Start(StartOptions.Clean);
             Directory.Exists(@"c:\data\db").Should().BeTrue();
         }
@@ -112,8 +121,11 @@ namespace MongoDB.Automation
         [KillMongoProcesses]
         public void Connect_should_be_successful_when_IsRunning_is_true()
         {
-            var config = new LocalProcessConfiguration(TestConfiguration.GetMongodPath(), null);
-            var subject = new LocalProcess(config.ExecutablePath, config.Arguments);
+            var config = new LocalProcessConfiguration
+            {
+                ExecutablePath = TestConfiguration.GetMongodPath()
+            };
+            var subject = new LocalProcess(config);
             subject.Start(StartOptions.Clean);
             var server = subject.Connect();
         }

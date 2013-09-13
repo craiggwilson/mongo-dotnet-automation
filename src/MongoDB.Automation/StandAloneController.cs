@@ -12,14 +12,19 @@ namespace MongoDB.Automation
     {
         private readonly IProcess _process;
 
-        public StandAloneController(IProcess process)
+        public StandAloneController(StandAloneConfiguration configuration, IProcessFactory processFactory)
         {
-            if (process == null)
+            if (configuration == null)
             {
-                throw new ArgumentNullException("process");
+                throw new ArgumentNullException("configuration");
             }
+            if (processFactory == null)
+            {
+                throw new ArgumentNullException("processFactory");
+            }
+            configuration.Validate();
 
-            _process = process;
+            _process = processFactory.Create(configuration.Server);
         }
 
         public MongoServer Connect()
@@ -34,7 +39,7 @@ namespace MongoDB.Automation
 
         public IControllerConfiguration GetConfiguration()
         {
-            return new StandAloneConfiguration(_process.GetConfiguration());
+            return new StandAloneConfiguration { Server = _process.GetConfiguration() };
         }
 
         public string GetAddShardAddress()

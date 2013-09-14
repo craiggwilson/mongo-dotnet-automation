@@ -8,6 +8,9 @@ namespace MongoDB.Automation.Console.Commands.Standalone
 {
     internal class StartCommand : StandAloneVerbCommand
     {
+        [Option]
+        public bool Wait { get; set; }
+
         public override string Name
         {
             get { return "Start"; }
@@ -17,7 +20,12 @@ namespace MongoDB.Automation.Console.Commands.Standalone
         {
             var config = GetConfiguration();
 
-            new StandAloneController(config, GetProcessFactory()).Start(StartOptions.Clean);
+            var controller = new StandAloneController(config, GetProcessFactory());
+            controller.Start(StartOptions.Clean);
+            if (Wait)
+            {
+                controller.WaitForFullAvailability(TimeSpan.FromMinutes(10));
+            }
         }
     }
 }

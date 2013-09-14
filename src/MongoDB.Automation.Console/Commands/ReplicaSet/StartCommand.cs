@@ -8,6 +8,9 @@ namespace MongoDB.Automation.Console.Commands.ReplicaSet
 {
     internal class StartCommand : ReplicaSetVerbCommand
     {
+        [Option]
+        public bool Wait { get; set; }
+
         public override string Name
         {
             get { return "Start"; }
@@ -17,7 +20,12 @@ namespace MongoDB.Automation.Console.Commands.ReplicaSet
         {
             var config = GetConfiguration();
 
-            new ReplicaSetController(config, GetProcessFactory()).Start(StartOptions.None);
+            var controller = new ReplicaSetController(config, GetProcessFactory());
+            controller.Start(StartOptions.Clean);
+            if (Wait)
+            {
+                controller.WaitForFullAvailability(TimeSpan.FromMinutes(10));
+            }
         }
     }
 }

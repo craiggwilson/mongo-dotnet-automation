@@ -12,10 +12,14 @@ namespace MongoDB.Automation.Console
     {
         static void Main(string[] args)
         {
-            args = new[] { "start" };
+            Config.SetError(System.Console.Error);
+            Config.SetOut(System.Console.Out);
+
+            args = new[] { "replicaset", "start", "-wait" };
 
             new Commander()
                 .AddDefaultCommand<StandaloneCommand>()
+                .AddCommand<ReplicaSetCommand>()
                 .Execute(args);
         }
     }

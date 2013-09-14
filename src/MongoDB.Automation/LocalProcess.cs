@@ -57,7 +57,7 @@ namespace MongoDB.Automation
                         CreateNoWindow = !string.IsNullOrEmpty(_logPath) || useSysLog,
                         WindowStyle = string.IsNullOrEmpty(_logPath) && !useSysLog
                             ? ProcessWindowStyle.Normal
-                            : ProcessWindowStyle.Hidden
+                            : ProcessWindowStyle.Hidden,
                     }
                 };
             }
@@ -194,17 +194,7 @@ namespace MongoDB.Automation
 
         private static Dictionary<string, string> ResolveCommandArguments(Dictionary<string, string> arguments)
         {
-            if (!arguments.ContainsKey(Constants.PORT))
-            {
-                arguments.Add(Constants.PORT, Config.DefaultPort.ToString());
-            }
-            if (!arguments.ContainsKey(Constants.DB_PATH))
-            {
-                arguments.Add(Constants.DB_PATH, Config.DefaultDbPath);
-            }
-
             // This is a simple topological sort.
-
             var remaining = arguments.Select(x => new CommandLineArgument(x.Key, x.Value)).ToList();
             var result = new Dictionary<string, string>();
             var set = new Queue<CommandLineArgument>(remaining.Where(x => x.Dependencies.Count == 0));

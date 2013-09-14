@@ -12,16 +12,6 @@ namespace MongoDB.Automation.Configuration
     public class LocalReplicaSetConfigurationBuilderTests
     {
         [Test]
-        public void Build_should_set_replica_set_name_to_default_when_unspecified()
-        {
-            var subject = new LocalReplicaSetConfigurationBuilder()
-                .Port(27017, new LocalReplicaSetMongodConfigurationBuilder().ExecutablePath(TestConfiguration.GetMongodPath()).Build());
-
-            var replSet = subject.Build();
-            replSet.ReplicaSetName.Should().Be(Config.DefaultReplicaSetName);
-        }
-
-        [Test]
         public void Build_should_override_port_specified_in_template()
         {
             var subject = new LocalReplicaSetConfigurationBuilder()

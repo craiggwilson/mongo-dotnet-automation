@@ -47,14 +47,13 @@
   <ItemGroup>
     <Compile Include="Commands\ClusterCommand.cs" />
     <Compile Include="Commands\Commander.cs" />
+    <Compile Include="Commands\ReplicaSetCommand.cs" />
     <Compile Include="Commands\ICommand.cs" />
     <Compile Include="Commands\ParsingCommand.cs" />
     <Compile Include="Commands\OptionAttribute.cs" />
-    <Compile Include="Commands\ReplicaSet\RestartCommand.cs" />
     <Compile Include="Commands\ReplicaSet\ReplicaSetVerbCommand.cs" />
     <Compile Include="Commands\ReplicaSet\StartCommand.cs" />
     <Compile Include="Commands\StandaloneCommand.cs" />
-    <Compile Include="Commands\Standalone\RestartCommand.cs" />
     <Compile Include="Commands\Standalone\StandAloneVerbCommand.cs" />
     <Compile Include="Commands\Standalone\StartCommand.cs" />
     <Compile Include="Program.cs" />

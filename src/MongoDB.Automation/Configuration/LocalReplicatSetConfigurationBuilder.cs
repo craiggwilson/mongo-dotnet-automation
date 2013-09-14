@@ -18,11 +18,6 @@ namespace MongoDB.Automation.Configuration
 
         public ReplicaSetConfiguration Build()
         {
-            if (string.IsNullOrEmpty(_setName))
-            {
-                _setName = Config.DefaultReplicaSetName;
-            }
-
             var processes = _templates
                 .Select(t => new LocalReplicaSetMongodConfigurationBuilder(t.Value)
                     .Port(t.Key)

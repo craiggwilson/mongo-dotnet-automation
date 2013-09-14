@@ -19,35 +19,6 @@ namespace MongoDB.Automation
         }
 
         /// <summary>
-        /// Gets the default db path.
-        /// </summary>
-        public static string DefaultDbPath
-        {
-            get
-            {
-                if (Environment.OSVersion.Platform == PlatformID.MacOSX || Environment.OSVersion.Platform == PlatformID.Unix)
-                {
-                    return "/data/db";
-                }
-
-                return "c:\\data\\db";
-            }
-        }
-
-        /// <summary>
-        /// Gets the default port.
-        /// </summary>
-        public static int DefaultPort
-        {
-            get { return 27017; }
-        }
-
-        public static string DefaultReplicaSetName
-        {
-            get { return "rs0"; }
-        }
-
-        /// <summary>
         /// Gets the TextWriter to send errors.
         /// </summary>
         public static TextWriter Error

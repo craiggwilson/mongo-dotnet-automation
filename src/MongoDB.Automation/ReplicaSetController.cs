@@ -265,7 +265,6 @@ namespace MongoDB.Automation
 
         private void Initialize(IEnumerable<IProcess> processes)
         {
-
             _config = new BsonDocument("_id", _replicaSetName);
             BsonArray memberConfigs = new BsonArray();
             _config.Add("members", memberConfigs);

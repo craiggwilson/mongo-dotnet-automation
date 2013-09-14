@@ -15,5 +15,7 @@ namespace MongoDB.Automation.Console.Commands
         public char ShortName { get; set; }
 
         public string LongName { get; set; }
+
+        public bool Required { get; set; }
     }
 }
